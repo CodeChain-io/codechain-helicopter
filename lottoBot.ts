@@ -4,25 +4,25 @@ import * as request from "request";
 import { U256 } from "codechain-sdk/lib/core/U256";
 
 const options = {
-    url: 'https://husky.codechain.io/explorer/api/accounts',
+    url: "https://husky.codechain.io/explorer/api/accounts",
     json: true
-}
+};
 
-let max: number = 0;
-let accounts: string[] = [];
-let weights: number[] = [];
+let max = 0;
+const accounts: string[] = [];
+const weights: number[] = [];
 
-const payer: string = '';
-const payer_passphrase: string = '';
-const payer_secret_code: string = '';
-const is_signed: boolean = false;
+const payer = "";
+const payer_passphrase = "";
+const payer_secret_code = "";
+const is_signed = false;
 
 function getRandomAccount(accounts: string[], weights: number[]): string {
     const random: number = Math.floor(Math.random() * max),
         lastIndex: number = weights.length - 1;
-    let sum: number = 0;
+    let sum = 0;
 
-    for (var i = 0; i < lastIndex; i++) {
+    for (let i = 0; i < lastIndex; i++) {
         sum += weights[i];
         if (random < sum) {
             return accounts[i];
@@ -36,10 +36,10 @@ function getAccount(): Promise<string> {
         request(options, function(error, _response, body) {
             if (error) reject(new Error(error));
             else {
-                for (var i = 0; i < body.length; i++) {
-                    const address = body[i]['address'];
-                    const balance = parseInt(body[i]['balance'], 10);
-                    if (address == payer) {
+                for (let i = 0; i < body.length; i++) {
+                    const address = body[i]["address"];
+                    const balance = parseInt(body[i]["balance"], 10);
+                    if (address === payer) {
                         continue;
                     }
 
@@ -55,14 +55,14 @@ function getAccount(): Promise<string> {
     });
 }
 
-if (typeof require != 'undefined' && require.main == module) {
+if (typeof require !== "undefined" && require.main === module) {
     const sdk = new SDK({
         server: "http://52.79.108.1:8080"
     });
 
     (async (): Promise<void> => {
         while (true) {
-            const winner = await getAccount()
+            const winner = await getAccount();
 
             const parcel = sdk.core.createPaymentParcel({
                 recipient: winner,
@@ -87,13 +87,13 @@ if (typeof require != 'undefined' && require.main == module) {
                         nonce
                     }));
                 }
-                console.log(winner + ' have won the lottery!')
+                console.log(winner + " have won the lottery!");
 
             } catch (err) {
                 console.error(err);
             }
 
-            sleep.sleep(5)
+            sleep.sleep(5);
         }
     })().catch(console.error);
 }
