@@ -60,10 +60,10 @@ if (typeof require != 'undefined' && require.main == module) {
         server: "http://52.79.108.1:8080"
     });
 
-    (async(): Promise<void> => {
+    (async (): Promise<void> => {
         while (true) {
             const winner = await getAccount()
-            
+
             const parcel = sdk.core.createPaymentParcel({
                 recipient: winner,
                 amount: 1
@@ -88,7 +88,7 @@ if (typeof require != 'undefined' && require.main == module) {
                     }));
                 }
                 console.log(winner + ' have won the lottery!')
-            
+
             } catch (err) {
                 console.error(err);
             }
