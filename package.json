@@ -1,0 +1,24 @@
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/request": "^2.47.1",
+    "@types/sleep": "^0.0.7",
+    "codechain-sdk": "0.1.0-alpha.19",
+    "request-json": "^0.6.3",
+    "sleep": "^5.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^10.7.1",
+    "ts-node": "^7.0.1",
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.0.1"
+  }
+}
