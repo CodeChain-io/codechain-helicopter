@@ -2,9 +2,10 @@ import { SDK } from "codechain-sdk";
 import * as sleep from "sleep";
 import * as request from "request";
 import { U256 } from "codechain-sdk/lib/core/U256";
+import * as config from "config";
 
 const options = {
-    url: "https://husky.codechain.io/explorer/api/accounts",
+    url: config.get('accounts_url').toString(),
     json: true
 };
 
@@ -12,9 +13,7 @@ let max = 0;
 const accounts: string[] = [];
 const weights: number[] = [];
 
-const payer = "";
-const payer_passphrase = "";
-const payer_secret_code = "";
+const payer = config.get('payer.payer').toString();
 const is_signed = false;
 
 function getRandomAccount(accounts: string[], weights: number[]): string {
@@ -57,7 +56,7 @@ function getAccount(): Promise<string> {
 
 if (typeof require !== "undefined" && require.main === module) {
     const sdk = new SDK({
-        server: "http://52.79.108.1:8080"
+        server: config.get('rpc_url').toString(),
     });
 
     (async (): Promise<void> => {
@@ -69,21 +68,32 @@ if (typeof require !== "undefined" && require.main === module) {
                 amount: 1
             });
 
-            const nonce = await sdk.rpc.chain.getNonce(payer) as U256;
+            let nonce = await sdk.rpc.chain.getNonce(payer) as U256;
 
             try {
 
                 if (is_signed) {
+                    if (!config.has('payer.payer_passphrase')) {
+                        console.log("Define payer.payer_passphrase for sending parcel");
+                        process.exit(-1);
+                    }
+                    const payer_passphrase = config.get('payer.payer_passphrase').toString();
+
                     await sdk.rpc.chain.sendParcel(parcel, {
                         account: payer,
                         passphrase: payer_passphrase,
-                        fee: 20,
+                        fee: 10,
                         nonce
                     });
                 } else {
+                    if (!config.has('payer.payer_secret_code')) {
+                        console.log("Define payer.payer_secret_code for signing the parcel");
+                        process.exit(-1);
+                    }
+                    const payer_secret_code = config.get('payer.payer_secret_code').toString();
                     await sdk.rpc.chain.sendSignedParcel(parcel.sign({
                         secret: payer_secret_code,
-                        fee: 10,
+                        fee: 30,
                         nonce
                     }));
                 }
@@ -93,7 +103,7 @@ if (typeof require !== "undefined" && require.main === module) {
                 console.error(err);
             }
 
-            sleep.sleep(5);
+            sleep.sleep(120);
         }
     })().catch(console.error);
 }

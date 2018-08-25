@@ -2,6 +2,7 @@ yarn-error.log
 node_modules
 
 /build/
+/config/production.json
 
 # Visual Studio Code - https://code.visualstudio.com/
 .settings/
