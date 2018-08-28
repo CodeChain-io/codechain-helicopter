@@ -3,7 +3,6 @@
   "payer": {
     "payer" : "undefined",
     "payer_passphrase" : "undefined",
-    "payer_secret_code" : "undefined"
   },
   "rpc_url" : "undefined"
 }

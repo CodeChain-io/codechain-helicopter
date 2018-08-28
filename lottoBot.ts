@@ -14,10 +14,10 @@ const weights: number[] = [];
 
 const payer = config.get("payer.payer").toString();
 if (payer === "undefined") {
-    console.log("Define payer.payer_passphrase for sending parcel");
+    console.log("Define payer for sending parcel");
     process.exit(-1);
 }
-const signed = false;
+const send_with_sign = false;
 
 function getRandomAccount(accounts: string[], weights: number[]): string {
     const random: number = Math.floor(Math.random() * max),
@@ -63,6 +63,8 @@ if (typeof require !== "undefined" && require.main === module) {
     });
 
     (async (): Promise<void> => {
+        const keyStore = await sdk.key.createLocalKeyStore();
+
         while (true) {
             const winner = await getAccount();
 
@@ -77,16 +79,16 @@ if (typeof require !== "undefined" && require.main === module) {
                 throw Error("Unreachable");
             }
 
+            const payer_passphrase = config.get("payer.payer_passphrase").toString();
+
+            if (payer_passphrase === "undefined") {
+                console.log("Define payer.payer_passphrase for sending parcel");
+                process.exit(-1);
+            }
+
             try {
 
-                if (signed) {
-                    const payer_passphrase = config.get("payer.payer_passphrase").toString();
-
-                    if (payer_passphrase === "undefined") {
-                        console.log("Define payer.payer_passphrase for sending parcel");
-                        process.exit(-1);
-                    }
-
+                if (send_with_sign) {
                     await sdk.rpc.chain.sendParcel(parcel, {
                         account: payer,
                         passphrase: payer_passphrase,
@@ -94,18 +96,14 @@ if (typeof require !== "undefined" && require.main === module) {
                         nonce
                     });
                 } else {
-                    const payer_secret_code = config.get("payer.payer_secret_code").toString();
-
-                    if (payer_secret_code === "undefined") {
-                        console.log("Define payer.payer_passphrase for sending parcel");
-                        process.exit(-1);
-                    }
-
-                    await sdk.rpc.chain.sendSignedParcel(parcel.sign({
-                        secret: payer_secret_code,
+                    const signed_parcel = await sdk.key.signParcel(parcel, {
+                        account: payer,
+                        keyStore,
                         fee: 10,
-                        nonce
-                    }));
+                        nonce,
+                        passphrase: payer_passphrase,
+                    });
+                    await sdk.rpc.chain.sendSignedParcel(signed_parcel);
                 }
                 console.log(winner + " have won the lottery!");
 
