@@ -17,7 +17,6 @@ if (payer === "undefined") {
     console.log("Define payer for sending parcel");
     process.exit(-1);
 }
-const send_with_sign = false;
 
 function getRandomAccount(accounts: string[], weights: number[]): string {
     const random: number = Math.floor(Math.random() * max),
@@ -87,24 +86,14 @@ if (typeof require !== "undefined" && require.main === module) {
             }
 
             try {
-
-                if (send_with_sign) {
-                    await sdk.rpc.chain.sendParcel(parcel, {
-                        account: payer,
-                        passphrase: payer_passphrase,
-                        fee: 10,
-                        nonce
-                    });
-                } else {
-                    const signed_parcel = await sdk.key.signParcel(parcel, {
-                        account: payer,
-                        keyStore,
-                        fee: 10,
-                        nonce,
-                        passphrase: payer_passphrase,
-                    });
-                    await sdk.rpc.chain.sendSignedParcel(signed_parcel);
-                }
+                const signed_parcel = await sdk.key.signParcel(parcel, {
+                    account: payer,
+                    keyStore,
+                    fee: 10,
+                    nonce,
+                    passphrase: payer_passphrase,
+                });
+                await sdk.rpc.chain.sendSignedParcel(signed_parcel);
                 console.log(winner + " have won the lottery!");
 
             } catch (err) {
