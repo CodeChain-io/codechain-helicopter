@@ -1,11 +1,10 @@
 import { SDK } from "codechain-sdk";
 import * as sleep from "sleep";
 import * as request from "request";
-import { U256 } from "codechain-sdk/lib/core/U256";
 import * as config from "config";
 
 const options = {
-    url: config.get('accounts_url').toString(),
+    url: config.get("accounts_url").toString(),
     json: true
 };
 
@@ -13,8 +12,12 @@ let max = 0;
 const accounts: string[] = [];
 const weights: number[] = [];
 
-const payer = config.get('payer.payer').toString();
-const is_signed = false;
+const payer = config.get("payer.payer").toString();
+if (payer === "undefined") {
+    console.log("Define payer.payer_passphrase for sending parcel");
+    process.exit(-1);
+}
+const signed = false;
 
 function getRandomAccount(accounts: string[], weights: number[]): string {
     const random: number = Math.floor(Math.random() * max),
@@ -56,7 +59,7 @@ function getAccount(): Promise<string> {
 
 if (typeof require !== "undefined" && require.main === module) {
     const sdk = new SDK({
-        server: config.get('rpc_url').toString(),
+        server: config.get("rpc_url").toString(),
     });
 
     (async (): Promise<void> => {
@@ -68,16 +71,21 @@ if (typeof require !== "undefined" && require.main === module) {
                 amount: 1
             });
 
-            let nonce = await sdk.rpc.chain.getNonce(payer) as U256;
+            const nonce = await sdk.rpc.chain.getNonce(payer);
+
+            if (nonce === null) {
+                throw Error("Unreachable");
+            }
 
             try {
 
-                if (is_signed) {
-                    if (!config.has('payer.payer_passphrase')) {
+                if (signed) {
+                    const payer_passphrase = config.get("payer.payer_passphrase").toString();
+
+                    if (payer_passphrase === "undefined") {
                         console.log("Define payer.payer_passphrase for sending parcel");
                         process.exit(-1);
                     }
-                    const payer_passphrase = config.get('payer.payer_passphrase').toString();
 
                     await sdk.rpc.chain.sendParcel(parcel, {
                         account: payer,
@@ -86,14 +94,16 @@ if (typeof require !== "undefined" && require.main === module) {
                         nonce
                     });
                 } else {
-                    if (!config.has('payer.payer_secret_code')) {
-                        console.log("Define payer.payer_secret_code for signing the parcel");
+                    const payer_secret_code = config.get("payer.payer_secret_code").toString();
+
+                    if (payer_secret_code === "undefined") {
+                        console.log("Define payer.payer_passphrase for sending parcel");
                         process.exit(-1);
                     }
-                    const payer_secret_code = config.get('payer.payer_secret_code').toString();
+
                     await sdk.rpc.chain.sendSignedParcel(parcel.sign({
                         secret: payer_secret_code,
-                        fee: 30,
+                        fee: 10,
                         nonce
                     }));
                 }
