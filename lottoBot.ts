@@ -65,6 +65,13 @@ if (typeof require !== "undefined" && require.main === module) {
     (async (): Promise<void> => {
         const keyStore = await sdk.key.createLocalKeyStore();
 
+        const payer_passphrase = config.get("payer.payer_passphrase").toString();
+
+        if (payer_passphrase === "undefined") {
+            console.log("Define payer.payer_passphrase for sending parcel");
+            process.exit(-1);
+        }
+
         while (true) {
             const winner = await getAccount();
 
@@ -77,13 +84,6 @@ if (typeof require !== "undefined" && require.main === module) {
 
             if (nonce === null) {
                 throw Error("Unreachable");
-            }
-
-            const payer_passphrase = config.get("payer.payer_passphrase").toString();
-
-            if (payer_passphrase === "undefined") {
-                console.log("Define payer.payer_passphrase for sending parcel");
-                process.exit(-1);
             }
 
             try {
