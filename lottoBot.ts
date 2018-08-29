@@ -73,16 +73,16 @@ async function main() {
     const dropInterval = config.get<number>("drop_interval");
 
     while (true) {
-        const winner = await chooseAccount(payer);
-
-        const parcel = sdk.core.createPaymentParcel({
-            recipient: winner,
-            amount: reward
-        });
-
-        const nonce = await sdk.rpc.chain.getNonce(payer);
-
         try {
+            const winner = await chooseAccount(payer);
+
+            const parcel = sdk.core.createPaymentParcel({
+                recipient: winner,
+                amount: reward
+            });
+
+            const nonce = await sdk.rpc.chain.getNonce(payer);
+
             const signedParcel = await sdk.key.signParcel(parcel, {
                 account: payer,
                 keyStore,
