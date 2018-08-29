@@ -9,7 +9,8 @@ interface Account {
     balance: BigNumber;
 }
 
-function getRandomAccount(accounts: Account[], totalBalance: BigNumber): string {
+function getRandomAccount(accounts: Account[]): string {
+    const totalBalance = accounts.reduce((acc, account) => account.balance.plus(acc), new BigNumber(0));
     const random = new BigNumber(Math.random()).multipliedBy(totalBalance);
     const lastIndex = accounts.length - 1;
     let sum = new BigNumber(0);
@@ -38,8 +39,7 @@ async function fetchAccounts(): Promise<Account[]> {
 
 async function chooseAccount(payer: string): Promise<string> {
     const accounts = (await fetchAccounts()).filter((account) => account.address !== payer);
-    const totalBalance = accounts.reduce((acc, account) => account.balance.plus(acc), new BigNumber(0));
-    return getRandomAccount(accounts, totalBalance);
+    return getRandomAccount(accounts);
 }
 
 async function main() {
