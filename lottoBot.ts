@@ -11,8 +11,8 @@ interface Account {
 };
 
 function getRandomAccount(accounts: Account[], totalBalance: number): string {
-    const random: number = Math.floor(Math.random() * totalBalance);
-    const lastIndex: number = accounts.length - 1;
+    const random = Math.floor(Math.random() * totalBalance);
+    const lastIndex = accounts.length - 1;
     let sum = 0;
 
     for (let i = 0; i < lastIndex; i++) {
