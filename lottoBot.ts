@@ -1,6 +1,6 @@
 import { SDK } from "codechain-sdk";
 import * as sleep from "sleep";
-import * as request from "request";
+import * as request from "request-promise-native";
 import * as config from "config";
 
 const DROP_INTERVAL = 120; // seconds
@@ -34,28 +34,23 @@ function getRandomAccount(accounts: string[], weights: number[]): string {
     return accounts[lastIndex];
 }
 
-function chooseAccount(): Promise<string> {
-    return new Promise(function(resolve, reject) {
-        request(options, function(error, _response, body) {
-            if (error) reject(new Error(error));
-            else {
-                for (let i = 0; i < body.length; i++) {
-                    const address = body[i]["address"];
-                    const balance = parseInt(body[i]["balance"], 10);
-                    if (address === payer) {
-                        continue;
-                    }
+async function chooseAccount(): Promise<string> {
+    const body = await request(options);
 
-                    max += balance;
-                    accounts.push(address);
-                    weights.push(balance);
-                }
+    for (let i = 0; i < body.length; i++) {
+        const address = body[i]["address"];
+        const balance = parseInt(body[i]["balance"], 10);
+        if (address === payer) {
+            continue;
+        }
 
-                const winner: string = getRandomAccount(accounts, weights);
-                resolve(winner);
-            }
-        });
-    });
+        max += balance;
+        accounts.push(address);
+        weights.push(balance);
+    }
+
+    const winner = getRandomAccount(accounts, weights);
+    return winner;
 }
 
 if (typeof require !== "undefined" && require.main === module) {
