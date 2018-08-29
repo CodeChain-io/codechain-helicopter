@@ -5,11 +5,6 @@ import * as config from "config";
 
 const DROP_INTERVAL = 120; // seconds
 
-const options = {
-    url: config.get("accounts_url").toString(),
-    json: true
-};
-
 let max = 0;
 const accounts: string[] = [];
 const weights: number[] = [];
@@ -35,7 +30,10 @@ function getRandomAccount(accounts: string[], weights: number[]): string {
 }
 
 async function chooseAccount(): Promise<string> {
-    const body = await request(options);
+    const body = await request({
+        url: config.get("accounts_url").toString(),
+        json: true
+    });
 
     for (let i = 0; i < body.length; i++) {
         const address = body[i]["address"];
