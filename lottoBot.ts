@@ -2,20 +2,21 @@ import { SDK } from "codechain-sdk";
 import * as sleep from "sleep";
 import * as request from "request-promise-native";
 import * as config from "config";
+import { BigNumber } from "bignumber.js";
 
 interface Account {
     address: string;
-    balance: number;
+    balance: BigNumber;
 }
 
-function getRandomAccount(accounts: Account[], totalBalance: number): string {
-    const random = Math.floor(Math.random() * totalBalance);
+function getRandomAccount(accounts: Account[], totalBalance: BigNumber): string {
+    const random = new BigNumber(Math.random()).multipliedBy(totalBalance);
     const lastIndex = accounts.length - 1;
-    let sum = 0;
+    let sum = new BigNumber(0);
 
     for (let i = 0; i < lastIndex; i++) {
-        sum += accounts[i].balance;
-        if (random < sum) {
+        sum = sum.plus(accounts[i].balance);
+        if (random.isLessThan(sum)) {
             return accounts[i].address;
         }
     }
@@ -31,14 +32,14 @@ async function fetchAccounts(): Promise<Account[]> {
     return items.map((item) => {
         const address = item["address"];
         // FIXME: balance is a big number. parseInt can fail.
-        const balance = parseInt(item["balance"], 10);
+        const balance = new BigNumber(item["balance"], 10);
         return { address, balance };
     });
 }
 
 async function chooseAccount(payer: string): Promise<string> {
     const accounts = (await fetchAccounts()).filter((account) => account.address !== payer);
-    const totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
+    const totalBalance = accounts.reduce((acc, account) => account.balance.plus(acc), new BigNumber(0));
     return getRandomAccount(accounts, totalBalance);
 }
 
@@ -64,7 +65,7 @@ async function main() {
         process.exit(-1);
     }
 
-    const reward = config.get<string>("reward");
+    const reward = config.get<number>("reward");
     if (!reward) {
         console.error("reward is not specified");
         process.exit(-1);

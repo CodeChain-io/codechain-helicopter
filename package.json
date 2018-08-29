@@ -11,10 +11,12 @@
   "author": "CodeChain Team <codechain@kodebox.io>",
   "license": "ISC",
   "dependencies": {
+    "@types/bignumber.js": "^5.0.0",
     "@types/config": "^0.0.34",
     "@types/request": "^2.47.1",
     "@types/request-promise-native": "^1.0.15",
     "@types/sleep": "^0.0.7",
+    "bignumber.js": "^7.2.1",
     "codechain-sdk": "^0.1.1-rc1",
     "config": "^2.0.1",
     "request-json": "^0.6.3",
