@@ -32,7 +32,7 @@ function getRandomAccount(accounts: string[], weights: number[]): string {
     return accounts[lastIndex];
 }
 
-function getAccount(): Promise<string> {
+function chooseAccount(): Promise<string> {
     return new Promise(function(resolve, reject) {
         request(options, function(error, _response, body) {
             if (error) reject(new Error(error));
@@ -72,7 +72,7 @@ if (typeof require !== "undefined" && require.main === module) {
         }
 
         while (true) {
-            const winner = await getAccount();
+            const winner = await chooseAccount();
 
             const parcel = sdk.core.createPaymentParcel({
                 recipient: winner,
