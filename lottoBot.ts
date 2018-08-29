@@ -53,13 +53,13 @@ async function main() {
 
     const payer = config.get("payer.payer").toString();
     if (payer === "undefined") {
-        console.log("payer.payer is not specified");
+        console.error("payer.payer is not specified");
         process.exit(-1);
     }
 
     const payerPassphrase = config.get("payer.payer_passphrase").toString();
     if (payerPassphrase === "undefined") {
-        console.log("payer.payer_passphrase is not specified");
+        console.error("payer.payer_passphrase is not specified");
         process.exit(-1);
     }
 
