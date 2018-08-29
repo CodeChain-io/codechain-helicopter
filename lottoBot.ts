@@ -6,8 +6,6 @@ import * as config from "config";
 const DROP_INTERVAL = 120; // seconds
 
 let max = 0;
-const accounts: string[] = [];
-const weights: number[] = [];
 
 const payer = config.get("payer.payer").toString();
 if (payer === "undefined") {
@@ -35,6 +33,8 @@ async function chooseAccount(): Promise<string> {
         json: true
     });
 
+    const accounts: string[] = [];
+    const weights: number[] = [];
     for (let i = 0; i < body.length; i++) {
         const address = body[i]["address"];
         const balance = parseInt(body[i]["balance"], 10);
