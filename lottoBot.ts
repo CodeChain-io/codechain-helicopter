@@ -5,18 +5,23 @@ import * as config from "config";
 
 const DROP_INTERVAL = 120; // seconds
 
-function getRandomAccount(accounts: string[], weights: number[], totalBalance: number): string {
+interface Account {
+    address: string,
+    balance: number
+};
+
+function getRandomAccount(accounts: Account[], totalBalance: number): string {
     const random: number = Math.floor(Math.random() * totalBalance);
-    const lastIndex: number = weights.length - 1;
+    const lastIndex: number = accounts.length - 1;
     let sum = 0;
 
     for (let i = 0; i < lastIndex; i++) {
-        sum += weights[i];
+        sum += accounts[i].balance;
         if (random < sum) {
-            return accounts[i];
+            return accounts[i].address;
         }
     }
-    return accounts[lastIndex];
+    return accounts[lastIndex].address;
 }
 
 async function chooseAccount(payer: string): Promise<string> {
@@ -25,8 +30,7 @@ async function chooseAccount(payer: string): Promise<string> {
         json: true
     });
 
-    const accounts: string[] = [];
-    const weights: number[] = [];
+    const accounts: Account[] = [];
     let totalBalance = 0;
 
     for (let i = 0; i < body.length; i++) {
@@ -37,11 +41,13 @@ async function chooseAccount(payer: string): Promise<string> {
         }
 
         totalBalance += balance;
-        accounts.push(address);
-        weights.push(balance);
+        accounts.push({
+            address,
+            balance
+        })
     }
 
-    const winner = getRandomAccount(accounts, weights, totalBalance);
+    const winner = getRandomAccount(accounts, totalBalance);
     return winner;
 }
 
