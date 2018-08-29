@@ -73,10 +73,6 @@ async function main() {
 
         const nonce = await sdk.rpc.chain.getNonce(payer);
 
-        if (nonce === null) {
-            throw Error("Unreachable");
-        }
-
         try {
             const signedParcel = await sdk.key.signParcel(parcel, {
                 account: payer,
