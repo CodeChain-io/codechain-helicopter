@@ -44,56 +44,56 @@ async function chooseAccount(payer: string): Promise<string> {
     return getRandomAccount(accounts, totalBalance);
 }
 
-if (typeof require !== "undefined" && require.main === module) {
+async function main() {
     const sdk = new SDK({
         server: config.get("rpc_url").toString(),
     });
 
-    (async (): Promise<void> => {
-        const keyStore = await sdk.key.createLocalKeyStore();
+    const keyStore = await sdk.key.createLocalKeyStore();
 
-        const payer = config.get("payer.payer").toString();
-        if (payer === "undefined") {
-            console.log("payer.payer is not specified");
-            process.exit(-1);
+    const payer = config.get("payer.payer").toString();
+    if (payer === "undefined") {
+        console.log("payer.payer is not specified");
+        process.exit(-1);
+    }
+
+    const payerPassphrase = config.get("payer.payer_passphrase").toString();
+    if (payerPassphrase === "undefined") {
+        console.log("payer.payer_passphrase is not specified");
+        process.exit(-1);
+    }
+
+    while (true) {
+        const winner = await chooseAccount(payer);
+
+        const parcel = sdk.core.createPaymentParcel({
+            recipient: winner,
+            amount: 1
+        });
+
+        const nonce = await sdk.rpc.chain.getNonce(payer);
+
+        if (nonce === null) {
+            throw Error("Unreachable");
         }
 
-        const payerPassphrase = config.get("payer.payer_passphrase").toString();
-        if (payerPassphrase === "undefined") {
-            console.log("payer.payer_passphrase is not specified");
-            process.exit(-1);
-        }
-
-        while (true) {
-            const winner = await chooseAccount(payer);
-
-            const parcel = sdk.core.createPaymentParcel({
-                recipient: winner,
-                amount: 1
+        try {
+            const signedParcel = await sdk.key.signParcel(parcel, {
+                account: payer,
+                keyStore,
+                fee: 10,
+                nonce,
+                passphrase: payerPassphrase,
             });
+            await sdk.rpc.chain.sendSignedParcel(signedParcel);
+            console.log(winner + " has won the lottery!");
 
-            const nonce = await sdk.rpc.chain.getNonce(payer);
-
-            if (nonce === null) {
-                throw Error("Unreachable");
-            }
-
-            try {
-                const signedParcel = await sdk.key.signParcel(parcel, {
-                    account: payer,
-                    keyStore,
-                    fee: 10,
-                    nonce,
-                    passphrase: payerPassphrase,
-                });
-                await sdk.rpc.chain.sendSignedParcel(signedParcel);
-                console.log(winner + " has won the lottery!");
-
-            } catch (err) {
-                console.error(err);
-            }
-
-            sleep.sleep(DROP_INTERVAL);
+        } catch (err) {
+            console.error(err);
         }
-    })().catch(console.error);
+
+        sleep.sleep(DROP_INTERVAL);
+    }
 }
+
+main();
