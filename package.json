@@ -1,14 +1,14 @@
 {
-  "name": "my-project",
+  "name": "codechain-helicopter",
   "version": "1.0.0",
-  "description": "",
+  "description": "An air drop tool for CodeChain",
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run lint",
     "lint": "tsfmt --verify"
   },
-  "author": "",
+  "author": "CodeChain Team <codechain@kodebox.io>",
   "license": "ISC",
   "dependencies": {
     "@types/config": "^0.0.34",
