@@ -3,6 +3,8 @@ import * as sleep from "sleep";
 import * as request from "request";
 import * as config from "config";
 
+const DROP_INTERVAL = 120; // seconds
+
 const options = {
     url: config.get("accounts_url").toString(),
     json: true
@@ -100,7 +102,7 @@ if (typeof require !== "undefined" && require.main === module) {
                 console.error(err);
             }
 
-            sleep.sleep(120);
+            sleep.sleep(DROP_INTERVAL);
         }
     })().catch(console.error);
 }
