@@ -64,13 +64,19 @@ async function main() {
         process.exit(-1);
     }
 
+    const reward = config.get<string>("reward");
+    if (!reward) {
+        console.error("reward is not specified");
+        process.exit(-1);
+    }
     const dropInterval = config.get<number>("drop_interval");
+
     while (true) {
         const winner = await chooseAccount(payer);
 
         const parcel = sdk.core.createPaymentParcel({
             recipient: winner,
-            amount: 1
+            amount: reward
         });
 
         const nonce = await sdk.rpc.chain.getNonce(payer);
