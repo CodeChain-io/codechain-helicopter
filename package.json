@@ -2,7 +2,7 @@
   "name": "codechain-helicopter",
   "version": "1.0.0",
   "description": "An air drop tool for CodeChain",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run lint",
