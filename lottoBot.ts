@@ -48,9 +48,7 @@ async function fetchAccounts(): Promise<Account[]> {
 async function chooseAccount(payer: string): Promise<string> {
     const accounts = (await fetchAccounts()).filter((account) => account.address !== payer);
     let totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
-
-    const winner = getRandomAccount(accounts, totalBalance);
-    return winner;
+    return getRandomAccount(accounts, totalBalance);
 }
 
 if (typeof require !== "undefined" && require.main === module) {
