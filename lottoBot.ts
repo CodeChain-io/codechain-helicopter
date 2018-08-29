@@ -24,28 +24,30 @@ function getRandomAccount(accounts: Account[], totalBalance: number): string {
     return accounts[lastIndex].address;
 }
 
-async function chooseAccount(payer: string): Promise<string> {
+async function fetchAccounts(): Promise<Account[]> {
     const body = await request({
         url: config.get("accounts_url").toString(),
         json: true
     });
 
     const accounts: Account[] = [];
-    let totalBalance = 0;
 
     for (let i = 0; i < body.length; i++) {
         const address = body[i]["address"];
         const balance = parseInt(body[i]["balance"], 10);
-        if (address === payer) {
-            continue;
-        }
 
-        totalBalance += balance;
         accounts.push({
             address,
             balance
-        })
+        });
     }
+
+    return accounts;
+}
+
+async function chooseAccount(payer: string): Promise<string> {
+    const accounts = (await fetchAccounts()).filter((account) => account.address !== payer);
+    let totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
 
     const winner = getRandomAccount(accounts, totalBalance);
     return winner;
