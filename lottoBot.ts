@@ -31,7 +31,6 @@ async function fetchAccounts(): Promise<Account[]> {
 
     return items.map((item) => {
         const address = item["address"];
-        // FIXME: balance is a big number. parseInt can fail.
         const balance = new BigNumber(item["balance"], 10);
         return { address, balance };
     });
