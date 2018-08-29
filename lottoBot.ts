@@ -3,8 +3,6 @@ import * as sleep from "sleep";
 import * as request from "request-promise-native";
 import * as config from "config";
 
-const DROP_INTERVAL = 120; // seconds
-
 interface Account {
     address: string,
     balance: number
@@ -66,6 +64,7 @@ async function main() {
         process.exit(-1);
     }
 
+    const dropInterval = config.get<number>("drop_interval");
     while (true) {
         const winner = await chooseAccount(payer);
 
@@ -91,7 +90,7 @@ async function main() {
             console.error(err);
         }
 
-        sleep.sleep(DROP_INTERVAL);
+        sleep.sleep(dropInterval);
     }
 }
 
