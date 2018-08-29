@@ -7,12 +7,6 @@ const DROP_INTERVAL = 120; // seconds
 
 let max = 0;
 
-const payer = config.get("payer.payer").toString();
-if (payer === "undefined") {
-    console.log("Define payer for sending parcel");
-    process.exit(-1);
-}
-
 function getRandomAccount(accounts: string[], weights: number[]): string {
     const random: number = Math.floor(Math.random() * max),
         lastIndex: number = weights.length - 1;
@@ -27,7 +21,7 @@ function getRandomAccount(accounts: string[], weights: number[]): string {
     return accounts[lastIndex];
 }
 
-async function chooseAccount(): Promise<string> {
+async function chooseAccount(payer: string): Promise<string> {
     const body = await request({
         url: config.get("accounts_url").toString(),
         json: true
@@ -59,15 +53,20 @@ if (typeof require !== "undefined" && require.main === module) {
     (async (): Promise<void> => {
         const keyStore = await sdk.key.createLocalKeyStore();
 
-        const payerPassphrase = config.get("payer.payer_passphrase").toString();
+        const payer = config.get("payer.payer").toString();
+        if (payer === "undefined") {
+            console.log("Define payer for sending parcel");
+            process.exit(-1);
+        }
 
+        const payerPassphrase = config.get("payer.payer_passphrase").toString();
         if (payerPassphrase === "undefined") {
             console.log("Define payer.payer_passphrase for sending parcel");
             process.exit(-1);
         }
 
         while (true) {
-            const winner = await chooseAccount();
+            const winner = await chooseAccount(payer);
 
             const parcel = sdk.core.createPaymentParcel({
                 recipient: winner,
