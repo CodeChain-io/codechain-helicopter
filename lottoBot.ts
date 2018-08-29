@@ -45,20 +45,23 @@ async function chooseAccount(payer: string): Promise<string> {
 }
 
 async function main() {
-    const sdk = new SDK({
-        server: config.get("rpc_url").toString(),
-    });
+    const rpcUrl = config.get<string>("rpc_url");
+    if (!rpcUrl) {
+        console.error("rpc_url is not specified");
+        process.exit(-1);
+    }
+    const sdk = new SDK({ server: rpcUrl });
 
     const keyStore = await sdk.key.createLocalKeyStore();
 
-    const payer = config.get("payer.payer").toString();
-    if (payer === "undefined") {
+    const payer = config.get<string>("payer.payer");
+    if (!payer) {
         console.error("payer.payer is not specified");
         process.exit(-1);
     }
 
-    const payerPassphrase = config.get("payer.payer_passphrase").toString();
-    if (payerPassphrase === "undefined") {
+    const payerPassphrase = config.get<string>("payer.payer_passphrase");
+    if (!payerPassphrase) {
         console.error("payer.payer_passphrase is not specified");
         process.exit(-1);
     }
