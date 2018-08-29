@@ -16,8 +16,7 @@
     "config": "^2.0.1",
     "request-json": "^0.6.3",
     "request-promise-native": "^1.0.5",
-    "sleep": "^5.2.3",
-    "tslint": "^5.11.0"
+    "sleep": "^5.2.3"
   },
   "devDependencies": {
     "@types/bignumber.js": "^5.0.0",
@@ -28,6 +27,7 @@
     "@types/sleep": "^0.0.7",
     "ts-node": "^7.0.1",
     "tsc": "^1.20150623.0",
+    "tslint": "^5.11.0",
     "typescript": "^3.0.1",
     "typescript-formatter": "^7.2.2"
   }
