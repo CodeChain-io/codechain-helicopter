@@ -6,8 +6,8 @@ import * as config from "config";
 const DROP_INTERVAL = 120; // seconds
 
 function getRandomAccount(accounts: string[], weights: number[], totalBalance: number): string {
-    const random: number = Math.floor(Math.random() * totalBalance),
-        lastIndex: number = weights.length - 1;
+    const random: number = Math.floor(Math.random() * totalBalance);
+    const lastIndex: number = weights.length - 1;
     let sum = 0;
 
     for (let i = 0; i < lastIndex; i++) {
