@@ -2,7 +2,7 @@
   "accounts_url": "https://husky.codechain.io/explorer/api/accounts" ,
   "payer": {
     "payer" : "undefined",
-    "payer_passphrase" : "undefined",
+    "payer_passphrase" : "undefined"
   },
   "rpc_url" : "undefined"
 }
