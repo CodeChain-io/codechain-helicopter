@@ -64,9 +64,9 @@ if (typeof require !== "undefined" && require.main === module) {
     (async (): Promise<void> => {
         const keyStore = await sdk.key.createLocalKeyStore();
 
-        const payer_passphrase = config.get("payer.payer_passphrase").toString();
+        const payerPassphrase = config.get("payer.payer_passphrase").toString();
 
-        if (payer_passphrase === "undefined") {
+        if (payerPassphrase === "undefined") {
             console.log("Define payer.payer_passphrase for sending parcel");
             process.exit(-1);
         }
@@ -86,14 +86,14 @@ if (typeof require !== "undefined" && require.main === module) {
             }
 
             try {
-                const signed_parcel = await sdk.key.signParcel(parcel, {
+                const signedParcel = await sdk.key.signParcel(parcel, {
                     account: payer,
                     keyStore,
                     fee: 10,
                     nonce,
-                    passphrase: payer_passphrase,
+                    passphrase: payerPassphrase,
                 });
-                await sdk.rpc.chain.sendSignedParcel(signed_parcel);
+                await sdk.rpc.chain.sendSignedParcel(signedParcel);
                 console.log(winner + " have won the lottery!");
 
             } catch (err) {
