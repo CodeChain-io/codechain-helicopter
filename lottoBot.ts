@@ -88,7 +88,7 @@ if (typeof require !== "undefined" && require.main === module) {
                     passphrase: payerPassphrase,
                 });
                 await sdk.rpc.chain.sendSignedParcel(signedParcel);
-                console.log(winner + " have won the lottery!");
+                console.log(winner + " has won the lottery!");
 
             } catch (err) {
                 console.error(err);
