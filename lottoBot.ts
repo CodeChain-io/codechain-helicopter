@@ -4,9 +4,9 @@ import * as request from "request-promise-native";
 import * as config from "config";
 
 interface Account {
-    address: string,
-    balance: number
-};
+    address: string;
+    balance: number;
+}
 
 function getRandomAccount(accounts: Account[], totalBalance: number): string {
     const random = Math.floor(Math.random() * totalBalance);
@@ -38,7 +38,7 @@ async function fetchAccounts(): Promise<Account[]> {
 
 async function chooseAccount(payer: string): Promise<string> {
     const accounts = (await fetchAccounts()).filter((account) => account.address !== payer);
-    let totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
+    const totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
     return getRandomAccount(accounts, totalBalance);
 }
 
