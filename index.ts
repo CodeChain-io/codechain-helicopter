@@ -12,7 +12,7 @@ interface Account {
 function getRandomAccount(accounts: Account[]): string {
     const totalBalance = accounts.reduce((acc, account) => account.balance.plus(acc), new BigNumber(0));
     const random = new BigNumber(Math.random()).multipliedBy(totalBalance);
-    const lastIndex = accounts.length - 1;
+    const lastIndex = accounts.length;
     let sum = new BigNumber(0);
 
     for (let i = 0; i < lastIndex; i++) {
@@ -21,7 +21,7 @@ function getRandomAccount(accounts: Account[]): string {
             return accounts[i].address;
         }
     }
-    return accounts[lastIndex].address;
+    throw new Error("unreachable");
 }
 
 async function fetchAccounts(): Promise<Account[]> {
