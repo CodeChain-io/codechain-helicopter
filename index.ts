@@ -3,10 +3,22 @@ import * as sleep from "sleep";
 import * as request from "request-promise-native";
 import * as config from "config";
 import { BigNumber } from "bignumber.js";
+import { U256 } from "codechain-sdk/lib/core/U256";
 
 interface Account {
     address: string;
     balance: BigNumber;
+}
+
+async function calculateNonce(sdk: SDK, payer: string): Promise<U256> {
+    const prevNonce = await sdk.rpc.chain.getNonce(payer);
+    const pendingParcels = await sdk.rpc.chain.getPendingParcels();
+    const payerParcels = pendingParcels.filter((parcel) => parcel.getSignerAddress().value === payer );
+
+    if (payerParcels.length === 0) {
+        return await sdk.rpc.chain.getNonce(payer);
+    }
+    return new U256(prevNonce.value.plus(payerParcels.length));
 }
 
 function getRandomAccount(accounts: Account[]): string {
@@ -80,7 +92,7 @@ async function main() {
                 amount: reward
             });
 
-            const nonce = await sdk.rpc.chain.getNonce(payer);
+            const nonce = await calculateNonce(sdk, payer);
 
             const signedParcel = await sdk.key.signParcel(parcel, {
                 account: payer,
