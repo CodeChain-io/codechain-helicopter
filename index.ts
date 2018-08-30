@@ -12,13 +12,12 @@ interface Account {
 function getRandomAccount(accounts: Account[]): string {
     const totalBalance = accounts.reduce((acc, account) => account.balance.plus(acc), new BigNumber(0));
     const random = new BigNumber(Math.random()).multipliedBy(totalBalance);
-    const lastIndex = accounts.length;
     let sum = new BigNumber(0);
 
-    for (let i = 0; i < lastIndex; i++) {
-        sum = sum.plus(accounts[i].balance);
+    for (const account of accounts) {
+        sum = sum.plus(account.balance);
         if (random.isLessThan(sum)) {
-            return accounts[i].address;
+            return account.address;
         }
     }
     throw new Error("unreachable");
