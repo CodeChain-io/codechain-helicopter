@@ -1,9 +1,9 @@
-import { SDK } from "codechain-sdk";
-import * as sleep from "sleep";
-import * as request from "request-promise-native";
-import * as config from "config";
 import { BigNumber } from "bignumber.js";
+import { SDK } from "codechain-sdk";
 import { U256 } from "codechain-sdk/lib/core/U256";
+import * as config from "config";
+import * as request from "request-promise-native";
+import * as sleep from "sleep";
 
 interface Account {
     address: string;
@@ -13,7 +13,9 @@ interface Account {
 async function calculateNonce(sdk: SDK, payer: string): Promise<U256> {
     const prevNonce = await sdk.rpc.chain.getNonce(payer);
     const pendingParcels = await sdk.rpc.chain.getPendingParcels();
-    const payerParcels = pendingParcels.filter((parcel) => parcel.getSignerAddress().value === payer );
+    const payerParcels = pendingParcels.filter(
+        parcel => parcel.getSignerAddress().value === payer
+    );
 
     if (payerParcels.length === 0) {
         return await sdk.rpc.chain.getNonce(payer);
@@ -22,7 +24,10 @@ async function calculateNonce(sdk: SDK, payer: string): Promise<U256> {
 }
 
 function getRandomAccount(accounts: Account[]): string {
-    const totalBalance = accounts.reduce((acc, account) => account.balance.plus(acc), new BigNumber(0));
+    const totalBalance = accounts.reduce(
+        (acc, account) => account.balance.plus(acc),
+        new BigNumber(0)
+    );
     const random = new BigNumber(Math.random()).multipliedBy(totalBalance);
     let sum = new BigNumber(0);
 
@@ -36,21 +41,28 @@ function getRandomAccount(accounts: Account[]): string {
 }
 
 async function fetchAccounts(): Promise<Account[]> {
-    const items: { address: string, balance: string }[] = await request({
+    const items: { address: string; balance: string }[] = await request({
         url: config.get("accounts_url").toString(),
         json: true
     });
 
-    return items.map((item) => {
-        const address = item["address"];
-        const balance = new BigNumber(item["balance"], 10);
+    return items.map(item => {
+        const address = item.address;
+        const balance = new BigNumber(item.balance, 10);
         return { address, balance };
     });
 }
 
-async function chooseAccount(payer: string, excludedAccountList: string[]): Promise<string> {
-    const accounts = (await fetchAccounts())
-        .filter((account) => account.address !== payer && !account.balance.isZero() && excludedAccountList.indexOf(payer) === -1);
+async function chooseAccount(
+    payer: string,
+    excludedAccountList: string[]
+): Promise<string> {
+    const accounts = (await fetchAccounts()).filter(
+        account =>
+            account.address !== payer &&
+            !account.balance.isZero() &&
+            excludedAccountList.indexOf(payer) === -1
+    );
     return getRandomAccount(accounts);
 }
 
@@ -99,11 +111,10 @@ async function main() {
                 keyStore,
                 fee: 10,
                 nonce,
-                passphrase: payerPassphrase,
+                passphrase: payerPassphrase
             });
             await sdk.rpc.chain.sendSignedParcel(signedParcel);
             console.log(winner + " has won the lottery!");
-
         } catch (err) {
             console.error(err);
         }
