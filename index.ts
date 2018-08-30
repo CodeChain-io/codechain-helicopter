@@ -24,7 +24,7 @@ function getRandomAccount(accounts: Account[]): string {
 }
 
 async function fetchAccounts(): Promise<Account[]> {
-    const items: [{ address: string, balance: string }] = await request({
+    const items: { address: string, balance: string }[] = await request({
         url: config.get("accounts_url").toString(),
         json: true
     });
