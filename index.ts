@@ -36,9 +36,9 @@ async function fetchAccounts(): Promise<Account[]> {
     });
 }
 
-async function chooseAccount(payer: string): Promise<string> {
+async function chooseAccount(payer: string, excludedAccountList: string[]): Promise<string> {
     const accounts = (await fetchAccounts())
-        .filter((account) => account.address !== payer && !account.balance.isZero());
+        .filter((account) => account.address !== payer && !account.balance.isZero() && excludedAccountList.indexOf(payer) === -1);
     return getRandomAccount(accounts);
 }
 
@@ -70,10 +70,10 @@ async function main() {
         process.exit(-1);
     }
     const dropInterval = config.get<number>("drop_interval");
-
+    const excludedAccountList = config.get<string[]>("exclude");
     while (true) {
         try {
-            const winner = await chooseAccount(payer);
+            const winner = await chooseAccount(payer, excludedAccountList);
 
             const parcel = sdk.core.createPaymentParcel({
                 recipient: winner,
