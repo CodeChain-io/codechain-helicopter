@@ -38,7 +38,8 @@ async function fetchAccounts(): Promise<Account[]> {
 }
 
 async function chooseAccount(payer: string): Promise<string> {
-    const accounts = (await fetchAccounts()).filter((account) => account.address !== payer);
+    const accounts = (await fetchAccounts())
+        .filter((account) => account.address !== payer && !account.balance.isZero());
     return getRandomAccount(accounts);
 }
 
