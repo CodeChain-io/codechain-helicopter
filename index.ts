@@ -61,7 +61,7 @@ async function chooseAccount(
         account =>
             account.address !== payer &&
             !account.balance.isZero() &&
-            excludedAccountList.indexOf(account) === -1
+            excludedAccountList.indexOf(account.address) === -1
     );
     return getRandomAccount(accounts);
 }
