@@ -73,7 +73,8 @@ async function airdropCCC(
     payerPassphrase: string,
     keyStore: KeyStore,
     excludedAccountList: string[],
-    amount: number
+    amount: number,
+    nonce: U256
 ) {
     try {
         const winner = await chooseAccount(payer, excludedAccountList);
@@ -82,8 +83,6 @@ async function airdropCCC(
             recipient: winner,
             amount
         });
-
-        const nonce = await calculateNonce(sdk, payer);
 
         const signedParcel = await sdk.key.signParcel(parcel, {
             account: payer,
@@ -128,6 +127,9 @@ async function main() {
     }
     const dropInterval = config.get<number>("drop_interval");
     const excludedAccountList = config.get<string[]>("exclude");
+
+    let nonce = await calculateNonce(sdk, payer);
+
     while (true) {
         await airdropCCC(
             sdk,
@@ -135,8 +137,10 @@ async function main() {
             payerPassphrase,
             keyStore,
             excludedAccountList,
-            reward
+            reward,
+            nonce
         );
+        nonce = nonce.increase();
 
         sleep.sleep(dropInterval);
     }
