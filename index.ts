@@ -12,15 +12,12 @@ interface Account {
 }
 
 async function calculateNonce(sdk: SDK, payer: string): Promise<U256> {
-    const prevNonce = await sdk.rpc.chain.getNonce(payer);
     const pendingParcels = await sdk.rpc.chain.getPendingParcels();
     const payerParcels = pendingParcels.filter(
         parcel => parcel.getSignerAddress().value === payer
     );
 
-    if (payerParcels.length === 0) {
-        return await sdk.rpc.chain.getNonce(payer);
-    }
+    const prevNonce = await sdk.rpc.chain.getNonce(payer);
     return new U256(prevNonce.value.plus(payerParcels.length));
 }
 
