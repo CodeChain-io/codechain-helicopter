@@ -2,6 +2,8 @@
 
 codechain-helicopter is a tool for airdropping CCC(CodeChain Coin) at the specified interval.
 
+![helicopter](https://raw.githubusercontent.com/CodeChain-io/codechain-helicopter/master/resource/helicopter.png)
+
 # Getting Started
 
 ## Clone the source code
