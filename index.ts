@@ -1,6 +1,7 @@
 import { BigNumber } from "bignumber.js";
 import { SDK } from "codechain-sdk";
 import { U256 } from "codechain-sdk/lib/core/U256";
+import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import * as config from "config";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
@@ -66,6 +67,38 @@ async function chooseAccount(
     return getRandomAccount(accounts);
 }
 
+async function airdropCCC(
+    sdk: SDK,
+    payer: string,
+    payerPassphrase: string,
+    keyStore: KeyStore,
+    excludedAccountList: string[],
+    amount: number
+) {
+    try {
+        const winner = await chooseAccount(payer, excludedAccountList);
+
+        const parcel = sdk.core.createPaymentParcel({
+            recipient: winner,
+            amount
+        });
+
+        const nonce = await calculateNonce(sdk, payer);
+
+        const signedParcel = await sdk.key.signParcel(parcel, {
+            account: payer,
+            keyStore,
+            fee: 10,
+            nonce,
+            passphrase: payerPassphrase
+        });
+        await sdk.rpc.chain.sendSignedParcel(signedParcel);
+        console.log(winner + " has won the lottery!");
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 async function main() {
     const rpcUrl = config.get<string>("rpc_url");
     if (!rpcUrl) {
@@ -96,28 +129,14 @@ async function main() {
     const dropInterval = config.get<number>("drop_interval");
     const excludedAccountList = config.get<string[]>("exclude");
     while (true) {
-        try {
-            const winner = await chooseAccount(payer, excludedAccountList);
-
-            const parcel = sdk.core.createPaymentParcel({
-                recipient: winner,
-                amount: reward
-            });
-
-            const nonce = await calculateNonce(sdk, payer);
-
-            const signedParcel = await sdk.key.signParcel(parcel, {
-                account: payer,
-                keyStore,
-                fee: 10,
-                nonce,
-                passphrase: payerPassphrase
-            });
-            await sdk.rpc.chain.sendSignedParcel(signedParcel);
-            console.log(winner + " has won the lottery!");
-        } catch (err) {
-            console.error(err);
-        }
+        await airdropCCC(
+            sdk,
+            payer,
+            payerPassphrase,
+            keyStore,
+            excludedAccountList,
+            reward
+        );
 
         sleep.sleep(dropInterval);
     }
