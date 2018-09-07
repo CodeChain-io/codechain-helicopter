@@ -1,4 +1,4 @@
-# codechain-helicopter [![Build Status](https://travis-ci.org/kseo/codechain-helicopter.svg?branch=master)](https://travis-ci.org/kseo/codechain-helicopter)
+# codechain-helicopter [![Build Status](https://travis-ci.org/CodeChain-io/codechain-helicopter.svg?branch=master)](https://travis-ci.org/CodeChain-io/codechain-helicopter)
 
 codechain-helicopter is a tool for airdropping CCC(CodeChain Coin) at the specified interval.
 
