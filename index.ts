@@ -1,5 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import { SDK } from "codechain-sdk";
+import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { U256 } from "codechain-sdk/lib/core/U256";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import * as config from "config";
@@ -67,35 +68,39 @@ async function chooseAccount(
     return getRandomAccount(accounts);
 }
 
-async function airdropCCC(
+async function sendParcel(
+    sdk: SDK,
+    account: string,
+    passphrase: string,
+    keyStore: KeyStore,
+    nonce: U256,
+    parcel: Parcel
+): Promise<U256> {
+    const signedParcel = await sdk.key.signParcel(parcel, {
+        account,
+        keyStore,
+        fee: 10,
+        nonce,
+        passphrase
+    });
+    await sdk.rpc.chain.sendSignedParcel(signedParcel);
+    return nonce.increase();
+}
+
+async function airdropCCCParcel(
     sdk: SDK,
     payer: string,
-    payerPassphrase: string,
-    keyStore: KeyStore,
     excludedAccountList: string[],
-    amount: number,
-    nonce: U256
-) {
-    try {
-        const winner = await chooseAccount(payer, excludedAccountList);
+    amount: number
+): Promise<Parcel> {
+    const recipient = await chooseAccount(payer, excludedAccountList);
 
-        const parcel = sdk.core.createPaymentParcel({
-            recipient: winner,
-            amount
-        });
+    console.log(`${recipient} has won the lottery!`);
 
-        const signedParcel = await sdk.key.signParcel(parcel, {
-            account: payer,
-            keyStore,
-            fee: 10,
-            nonce,
-            passphrase: payerPassphrase
-        });
-        await sdk.rpc.chain.sendSignedParcel(signedParcel);
-        console.log(winner + " has won the lottery!");
-    } catch (err) {
-        console.error(err);
-    }
+    return sdk.core.createPaymentParcel({
+        recipient,
+        amount
+    });
 }
 
 async function main() {
@@ -131,16 +136,25 @@ async function main() {
     let nonce = await calculateNonce(sdk, payer);
 
     while (true) {
-        await airdropCCC(
-            sdk,
-            payer,
-            payerPassphrase,
-            keyStore,
-            excludedAccountList,
-            reward,
-            nonce
-        );
-        nonce = nonce.increase();
+        try {
+            const parcel = await airdropCCCParcel(
+                sdk,
+                payer,
+                excludedAccountList,
+                reward
+            );
+            nonce = await sendParcel(
+                sdk,
+                payer,
+                payerPassphrase,
+                keyStore,
+                nonce,
+                parcel
+            );
+            console.log("CCC is airdropped");
+        } catch (err) {
+            console.error(err);
+        }
 
         sleep.sleep(dropInterval);
     }
