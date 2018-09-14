@@ -4,6 +4,7 @@
     "payer" : null,
     "payer_passphrase" : null
   },
+  "exclude": [],
   "rpc_url" : null,
   "drop_interval": 120,
   "reward": 1
