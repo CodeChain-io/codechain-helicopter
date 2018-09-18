@@ -1,10 +1,9 @@
 import { BigNumber } from "bignumber.js";
 import { SDK } from "codechain-sdk";
 import { Parcel } from "codechain-sdk/lib/core/Parcel";
-import * as config from "config";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
-import { calculateNonce, sendParcel } from "./util";
+import { calculateNonce, getConfig, sendParcel } from "./util";
 
 interface Account {
     address: string;
@@ -30,7 +29,7 @@ function getRandomAccount(accounts: Account[]): string {
 
 async function fetchAccounts(): Promise<Account[]> {
     const items: { address: string; balance: string }[] = await request({
-        url: config.get("accounts_url").toString(),
+        url: getConfig<string>("accounts_url").toString(),
         json: true
     });
 
@@ -71,30 +70,19 @@ async function airdropCCCParcel(
 }
 
 async function main() {
-    const rpcUrl = config.get<string>("rpc_url");
-    if (!rpcUrl) {
-        throw new Error("rpc_url is not specified");
-    }
+    const rpcUrl = getConfig<string>("rpc_url");
+
     const sdk = new SDK({ server: rpcUrl });
 
     const keyStore = await sdk.key.createLocalKeyStore();
 
-    const payer = config.get<string>("payer.payer");
-    if (!payer) {
-        throw new Error("payer.payer is not specified");
-    }
+    const payer = getConfig<string>("payer.payer");
 
-    const payerPassphrase = config.get<string>("payer.payer_passphrase");
-    if (!payerPassphrase) {
-        throw new Error("payer.payer_passphrase is not specified");
-    }
+    const payerPassphrase = getConfig<string>("payer.payer_passphrase");
+    const reward = getConfig<number>("reward");
 
-    const reward = config.get<number>("reward");
-    if (!reward) {
-        throw new Error("reward is not specified");
-    }
-    const dropInterval = config.get<number>("drop_interval");
-    const excludedAccountList = config.get<string[]>("exclude");
+    const dropInterval = getConfig<number>("drop_interval");
+    const excludedAccountList = getConfig<string[]>("exclude");
 
     let nonce = await calculateNonce(sdk, payer);
 

@@ -2,6 +2,7 @@ import { SDK } from "codechain-sdk";
 import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { U256 } from "codechain-sdk/lib/core/U256";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
+import * as config from "config";
 
 export async function calculateNonce(sdk: SDK, payer: string): Promise<U256> {
     const prevNonce = await sdk.rpc.chain.getNonce(payer);
@@ -33,4 +34,12 @@ export async function sendParcel(
     });
     await sdk.rpc.chain.sendSignedParcel(signedParcel);
     return nonce.increase();
+}
+
+export function getConfig<T>(field: string): T {
+    const c = config.get<T>(field);
+    if (!c) {
+        throw new Error(`${field} is not specified`);
+    }
+    return c;
 }
