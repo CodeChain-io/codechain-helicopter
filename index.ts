@@ -73,8 +73,7 @@ async function airdropCCCParcel(
 async function main() {
     const rpcUrl = config.get<string>("rpc_url");
     if (!rpcUrl) {
-        console.error("rpc_url is not specified");
-        process.exit(-1);
+        throw new Error("rpc_url is not specified");
     }
     const sdk = new SDK({ server: rpcUrl });
 
@@ -82,20 +81,17 @@ async function main() {
 
     const payer = config.get<string>("payer.payer");
     if (!payer) {
-        console.error("payer.payer is not specified");
-        process.exit(-1);
+        throw new Error("payer.payer is not specified");
     }
 
     const payerPassphrase = config.get<string>("payer.payer_passphrase");
     if (!payerPassphrase) {
-        console.error("payer.payer_passphrase is not specified");
-        process.exit(-1);
+        throw new Error("payer.payer_passphrase is not specified");
     }
 
     const reward = config.get<number>("reward");
     if (!reward) {
-        console.error("reward is not specified");
-        process.exit(-1);
+        throw new Error("reward is not specified");
     }
     const dropInterval = config.get<number>("drop_interval");
     const excludedAccountList = config.get<string[]>("exclude");
@@ -127,4 +123,6 @@ async function main() {
     }
 }
 
-main();
+main()
+    .then(() => console.log("finish"))
+    .catch(err => console.error(err));
