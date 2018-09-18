@@ -5,6 +5,9 @@
     "payer_passphrase" : null
   },
   "exclude": [],
+  "oil": {
+    "owner": null
+  },
   "rpc_url" : null,
   "drop_interval": 120,
   "reward": 1
