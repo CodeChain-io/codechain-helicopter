@@ -81,7 +81,13 @@ async function airdropOilParcel(
     oilPassphrase: string,
     keyStore: KeyStore
 ): Promise<[Parcel, Asset]> {
-    const tx = sdk.core.createAssetTransferTransaction();
+    const nonce = Math.floor(Math.random() * 10000);
+    const tx = sdk.core.createAssetTransferTransaction({
+        nonce,
+        burns: [],
+        inputs: [],
+        outputs: []
+    });
     tx.addInputs(oilAsset);
 
     const burnScript = Buffer.from([Script.Opcode.BURN]);
