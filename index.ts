@@ -120,7 +120,7 @@ async function main() {
 
     const payer = getConfig<string>("payer.payer");
 
-    const payerPassphrase = getConfig<string>("payer.payer_passphrase");
+    const payerPassphrase = getConfig<string>("payer.passphrase");
     const reward = getConfig<number>("reward");
 
     const dropInterval = getConfig<number>("drop_interval");

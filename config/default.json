@@ -2,7 +2,7 @@
   "accounts_url": "https://husky.codechain.io/explorer/api/accounts" ,
   "payer": {
     "payer" : null,
-    "payer_passphrase" : null
+    "passphrase" : null
   },
   "exclude": [],
   "oil": {
