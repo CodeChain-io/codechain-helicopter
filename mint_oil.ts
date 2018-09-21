@@ -36,17 +36,10 @@ async function main() {
         transactions: [mintOilTx]
     });
 
-    let nonce = await calculateNonce(sdk, payer);
+    const nonce = await calculateNonce(sdk, payer);
 
     const keyStore = await sdk.key.createLocalKeyStore();
-    nonce = await sendParcel(
-        sdk,
-        payer,
-        payerPassphrase,
-        keyStore,
-        nonce,
-        mintParcel
-    );
+    await sendParcel(sdk, payer, payerPassphrase, keyStore, nonce, mintParcel);
 
     console.log(`oil: ${mintOilTx.hash().toEncodeObject()}`);
 }

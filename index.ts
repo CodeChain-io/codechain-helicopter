@@ -153,7 +153,7 @@ async function main() {
                 excludedAccountList,
                 reward
             );
-            nonce = await sendParcel(
+            await sendParcel(
                 sdk,
                 payer,
                 payerPassphrase,
@@ -162,6 +162,7 @@ async function main() {
                 parcel
             );
             console.log("CCC is airdropped");
+            nonce = await calculateNonce(sdk, payer);
         } catch (err) {
             console.error(err);
         }
@@ -178,7 +179,7 @@ async function main() {
                     oil.passphrase,
                     keyStore
                 );
-                nonce = await sendParcel(
+                await sendParcel(
                     sdk,
                     payer,
                     payerPassphrase,
@@ -190,6 +191,7 @@ async function main() {
                     `Oil is airdropped: ${oil.asset.outPoint.transactionHash.toEncodeObject()} => ${newOilAsset.outPoint.transactionHash.toEncodeObject()}`
                 );
                 oil.asset = newOilAsset;
+                nonce = await calculateNonce(sdk, payer);
             } catch (err) {
                 console.error(err);
             }

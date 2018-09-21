@@ -24,7 +24,7 @@ export async function sendParcel(
     keyStore: KeyStore,
     nonce: U256,
     parcel: Parcel
-): Promise<U256> {
+): Promise<void> {
     const signedParcel = await sdk.key.signParcel(parcel, {
         account,
         keyStore,
@@ -33,7 +33,6 @@ export async function sendParcel(
         passphrase
     });
     await sdk.rpc.chain.sendSignedParcel(signedParcel);
-    return nonce.increase();
 }
 
 export function getConfig<T>(field: string): T {
