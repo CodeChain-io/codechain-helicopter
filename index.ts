@@ -166,6 +166,7 @@ async function main() {
         } catch (err) {
             console.error(err);
         }
+        sleep.sleep(dropInterval);
 
         if (oil) {
             try {
