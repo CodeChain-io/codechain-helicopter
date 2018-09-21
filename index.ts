@@ -119,8 +119,9 @@ async function airdropOilParcel(
 
 async function main() {
     const rpcUrl = getConfig<string>("rpc_url");
+    const networkId = getConfig<string>("network_id");
 
-    const sdk = new SDK({ server: rpcUrl });
+    const sdk = new SDK({ server: rpcUrl, networkId });
 
     const keyStore = await sdk.key.createLocalKeyStore();
 

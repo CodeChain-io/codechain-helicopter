@@ -10,6 +10,7 @@
     "passphrase" : null,
     "tx" : null
   },
+  "network_id": null,
   "rpc_url" : null,
   "drop_interval": 120,
   "reward": 1
