@@ -6,7 +6,7 @@
   },
   "exclude": [],
   "oil": {
-    "owner": null
+    "owner": null,
     "passphrase" : null,
     "tx" : null
   },
