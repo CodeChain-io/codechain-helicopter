@@ -8,7 +8,7 @@ import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake256 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
-import { calculateNonce, getConfig, sendParcel } from "./util";
+import { calculateNonce, getConfig, haveConfig, sendParcel } from "./util";
 
 interface Account {
     address: string;
@@ -128,13 +128,21 @@ async function main() {
 
     let nonce = await calculateNonce(sdk, payer);
 
-    const oilTx = new H256(getConfig<string>("oil.tx"));
-    const oilOwner = getConfig<string>("oil.owner");
-    const oilPassphrase = getConfig<string>("oil.passphrase");
-
-    let oilAsset = await sdk.rpc.chain.getAsset(oilTx, 0);
-    if (!oilAsset) {
-        throw new Error("Cannot get an oil asset");
+    let oil = null;
+    if (haveConfig("oil.tx")) {
+        const tx = new H256(getConfig<string>("oil.tx"));
+        const owner = getConfig<string>("oil.owner");
+        const passphrase = getConfig<string>("oil.passphrase");
+        const asset = await sdk.rpc.chain.getAsset(tx, 0);
+        if (!asset) {
+            throw new Error("Cannot get an oil asset");
+        }
+        oil = {
+            tx,
+            owner,
+            passphrase,
+            asset
+        };
     }
 
     while (true) {
@@ -158,34 +166,35 @@ async function main() {
             console.error(err);
         }
 
-        try {
-            const [oilParcel, newOilAsset]: [
-                Parcel,
-                Asset
-            ] = await airdropOilParcel(
-                sdk,
-                oilAsset,
-                oilOwner,
-                oilPassphrase,
-                keyStore
-            );
-            nonce = await sendParcel(
-                sdk,
-                payer,
-                payerPassphrase,
-                keyStore,
-                nonce,
-                oilParcel
-            );
-            console.log(
-                `Oil is airdropped: ${oilAsset.outPoint.transactionHash.toEncodeObject()} => ${newOilAsset.outPoint.transactionHash.toEncodeObject()}`
-            );
-            oilAsset = newOilAsset;
-        } catch (err) {
-            console.error(err);
+        if (oil) {
+            try {
+                const [oilParcel, newOilAsset]: [
+                    Parcel,
+                    Asset
+                ] = await airdropOilParcel(
+                    sdk,
+                    oil.asset,
+                    oil.owner,
+                    oil.passphrase,
+                    keyStore
+                );
+                nonce = await sendParcel(
+                    sdk,
+                    payer,
+                    payerPassphrase,
+                    keyStore,
+                    nonce,
+                    oilParcel
+                );
+                console.log(
+                    `Oil is airdropped: ${oil.asset.outPoint.transactionHash.toEncodeObject()} => ${newOilAsset.outPoint.transactionHash.toEncodeObject()}`
+                );
+                oil.asset = newOilAsset;
+            } catch (err) {
+                console.error(err);
+            }
+            sleep.sleep(dropInterval);
         }
-
-        sleep.sleep(dropInterval);
     }
 }
 

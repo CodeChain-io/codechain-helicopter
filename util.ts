@@ -43,3 +43,7 @@ export function getConfig<T>(field: string): T {
     }
     return c;
 }
+
+export function haveConfig(field: string): boolean {
+    return !!config.has(field);
+}
