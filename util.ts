@@ -44,5 +44,5 @@ export function getConfig<T>(field: string): T {
 }
 
 export function haveConfig(field: string): boolean {
-    return !!config.has(field);
+    return !!config.has(field) && config.get(field) != null;
 }
