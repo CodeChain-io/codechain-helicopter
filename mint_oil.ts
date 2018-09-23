@@ -28,7 +28,7 @@ async function main() {
 
     const oilOwner = getConfig<string>("oil.owner");
     const payer = getConfig<string>("payer.payer");
-    const payerPassphrase = getConfig<string>("payer.payer_passphrase");
+    const payerPassphrase = getConfig<string>("payer.passphrase");
 
     const mintOilTx = createMintOilTx(sdk, oilOwner);
 
