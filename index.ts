@@ -133,8 +133,6 @@ async function main() {
     const dropInterval = getConfig<number>("drop_interval");
     const excludedAccountList = getConfig<string[]>("exclude");
 
-    let nonce = await calculateNonce(sdk, payer);
-
     let oil = null;
     if (haveConfig("oil.tx")) {
         const tx = new H256(getConfig<string>("oil.tx"));
@@ -160,6 +158,7 @@ async function main() {
                 excludedAccountList,
                 reward
             );
+            const nonce = await calculateNonce(sdk, payer);
             await sendParcel(
                 sdk,
                 payer,
@@ -169,7 +168,6 @@ async function main() {
                 parcel
             );
             console.log("CCC is airdropped");
-            nonce = await calculateNonce(sdk, payer);
         } catch (err) {
             console.error(err);
         }
@@ -187,6 +185,7 @@ async function main() {
                     oil.passphrase,
                     keyStore
                 );
+                const nonce = await calculateNonce(sdk, payer);
                 await sendParcel(
                     sdk,
                     payer,
@@ -199,7 +198,6 @@ async function main() {
                     `Oil is airdropped: ${oil.asset.outPoint.transactionHash.toEncodeObject()} => ${newOilAsset.outPoint.transactionHash.toEncodeObject()}`
                 );
                 oil.asset = newOilAsset;
-                nonce = await calculateNonce(sdk, payer);
             } catch (err) {
                 console.error(err);
             }
