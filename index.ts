@@ -4,6 +4,7 @@ import { Asset } from "codechain-sdk/lib/core/Asset";
 import { H256 } from "codechain-sdk/lib/core/H256";
 import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { Script } from "codechain-sdk/lib/core/Script";
+import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake256 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
@@ -74,6 +75,17 @@ async function airdropCCCParcel(
     });
 }
 
+function burnOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
+    const burnScript = Buffer.from([Script.Opcode.BURN]);
+
+    return new sdk.core.classes.AssetTransferOutput({
+        lockScriptHash: H256.ensure(blake256(burnScript)),
+        parameters: [],
+        assetType,
+        amount: 1
+    });
+}
+
 async function airdropOilParcel(
     sdk: SDK,
     oilAsset: Asset,
@@ -90,20 +102,14 @@ async function airdropOilParcel(
     });
     tx.addInputs(oilAsset);
 
-    const burnScript = Buffer.from([Script.Opcode.BURN]);
-    tx.addOutputs(
-        {
-            recipient: oilOwner,
-            amount: oilAsset.amount - 1,
-            assetType: oilAsset.assetType
-        },
-        new sdk.core.classes.AssetTransferOutput({
-            lockScriptHash: H256.ensure(blake256(burnScript)),
-            parameters: [],
-            assetType: oilAsset.assetType,
-            amount: 1
-        })
-    );
+    const burn = burnOutput(sdk, oilAsset.assetType);
+
+    tx.addOutputs({
+        recipient: oilOwner,
+        amount: oilAsset.amount - burn.amount,
+        assetType: oilAsset.assetType
+    });
+    tx.addOutputs(burn);
 
     await sdk.key.signTransactionInput(tx, 0, {
         keyStore,
