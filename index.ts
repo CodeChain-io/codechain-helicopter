@@ -197,6 +197,9 @@ async function main() {
         sleep.sleep(dropInterval);
 
         if (oil) {
+            if (Math.random() < 0.1) {
+                continue;
+            }
             try {
                 const [oilParcel, newOilAsset]: [
                     Parcel,
