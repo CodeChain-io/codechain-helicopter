@@ -75,15 +75,21 @@ async function airdropCCCParcel(
     });
 }
 
-function burnOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
-    const burnScript = Buffer.from([Script.Opcode.BURN]);
-
+function transferOutput(sdk: SDK, assetType: H256, script: Buffer): AssetTransferOutput {
     return new sdk.core.classes.AssetTransferOutput({
-        lockScriptHash: H256.ensure(blake256(burnScript)),
+        lockScriptHash: H256.ensure(blake256(script)),
         parameters: [],
         assetType,
         amount: 1
     });
+}
+function burnOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
+    const burnScript = Buffer.from([Script.Opcode.BURN]);
+    return transferOutput(sdk, assetType, burnScript);
+}
+function freeOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
+    const freeScript = Buffer.from([Script.Opcode.PUSHB, 1]);
+    return transferOutput(sdk, assetType, freeScript);
 }
 
 async function airdropOilParcel(
@@ -103,13 +109,15 @@ async function airdropOilParcel(
     tx.addInputs(oilAsset);
 
     const burn = burnOutput(sdk, oilAsset.assetType);
+    const free = freeOutput(sdk, oilAsset.assetType);
 
     tx.addOutputs({
         recipient: oilOwner,
-        amount: oilAsset.amount - burn.amount,
+        amount: oilAsset.amount - burn.amount - free.amount,
         assetType: oilAsset.assetType
     });
     tx.addOutputs(burn);
+    tx.addOutputs(free);
 
     await sdk.key.signTransactionInput(tx, 0, {
         keyStore,
