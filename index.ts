@@ -75,12 +75,16 @@ async function airdropCCCParcel(
     });
 }
 
-function transferOutput(sdk: SDK, assetType: H256, script: Buffer): AssetTransferOutput {
+function transferOutput(
+    sdk: SDK,
+    assetType: H256,
+    script: Buffer
+): AssetTransferOutput {
     return new sdk.core.classes.AssetTransferOutput({
         lockScriptHash: H256.ensure(blake256(script)),
         parameters: [],
         assetType,
-        amount: 1
+        amount: Math.min(10, -Math.floor(Math.log(Math.random())))
     });
 }
 function burnOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
