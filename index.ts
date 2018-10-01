@@ -5,6 +5,7 @@ import { H256 } from "codechain-sdk/lib/core/H256";
 import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { Script } from "codechain-sdk/lib/core/Script";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
+import { AssetTransferTransaction } from "codechain-sdk/lib/core/transaction/AssetTransferTransaction";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake256 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
@@ -96,6 +97,12 @@ function freeOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
     return transferOutput(sdk, assetType, freeScript);
 }
 
+function addOutput(tx: AssetTransferTransaction, output: AssetTransferOutput) {
+    if (output.amount !== 0) {
+        tx.addOutputs(output);
+    }
+}
+
 async function airdropOilParcel(
     sdk: SDK,
     oilAsset: Asset,
@@ -121,11 +128,11 @@ async function airdropOilParcel(
         assetType: oilAsset.assetType
     });
     if (Math.random() < 0.5) {
-        tx.addOutputs(burn);
-        tx.addOutputs(free);
+        addOutput(tx, burn);
+        addOutput(tx, free);
     } else {
-        tx.addOutputs(free);
-        tx.addOutputs(burn);
+        addOutput(tx, free);
+        addOutput(tx, burn);
     }
 
     await sdk.key.signTransactionInput(tx, 0, {
