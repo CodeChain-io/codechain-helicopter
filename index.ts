@@ -116,8 +116,13 @@ async function airdropOilParcel(
         amount: oilAsset.amount - burn.amount - free.amount,
         assetType: oilAsset.assetType
     });
-    tx.addOutputs(burn);
-    tx.addOutputs(free);
+    if (Math.random() < 0.5) {
+        tx.addOutputs(burn);
+        tx.addOutputs(free);
+    } else {
+        tx.addOutputs(free);
+        tx.addOutputs(burn);
+    }
 
     await sdk.key.signTransactionInput(tx, 0, {
         keyStore,
