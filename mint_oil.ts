@@ -24,7 +24,9 @@ function createMintOilTx(sdk: SDK, oilOwner: string): AssetMintTransaction {
 
 async function main() {
     const rpcUrl = getConfig<string>("rpc_url");
-    const sdk = new SDK({ server: rpcUrl });
+    const networkId = getConfig<string>("network_id");
+
+    const sdk = new SDK({ server: rpcUrl, networkId });
 
     const oilOwner = getConfig<string>("oil.owner");
     const payer = getConfig<string>("payer.payer");
