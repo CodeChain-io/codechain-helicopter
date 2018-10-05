@@ -1,13 +1,14 @@
 import { BigNumber } from "bignumber.js";
 import { SDK } from "codechain-sdk";
 import { Asset } from "codechain-sdk/lib/core/Asset";
+import { H160 } from "codechain-sdk/lib/core/H160";
 import { H256 } from "codechain-sdk/lib/core/H256";
 import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { Script } from "codechain-sdk/lib/core/Script";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import { AssetTransferTransaction } from "codechain-sdk/lib/core/transaction/AssetTransferTransaction";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
-import { blake256 } from "codechain-sdk/lib/utils";
+import { blake160 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
 import { calculateNonce, getConfig, haveConfig, sendParcel } from "./util";
@@ -82,7 +83,7 @@ function transferOutput(
     script: Buffer
 ): AssetTransferOutput {
     return new sdk.core.classes.AssetTransferOutput({
-        lockScriptHash: H256.ensure(blake256(script)),
+        lockScriptHash: H160.ensure(blake160(script)),
         parameters: [],
         assetType,
         amount: Math.min(10, -Math.floor(Math.log(Math.random())))

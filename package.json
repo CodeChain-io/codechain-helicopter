@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "bignumber.js": "^7.2.1",
-    "codechain-sdk": "^0.2.0-alpha.1",
+    "codechain-sdk": "^0.4.0-rc3",
     "config": "^2.0.1",
     "request-json": "^0.6.3",
     "request-promise-native": "^1.0.5",
