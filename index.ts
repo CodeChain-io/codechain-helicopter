@@ -7,11 +7,12 @@ import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { Script } from "codechain-sdk/lib/core/Script";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import { AssetTransferTransaction } from "codechain-sdk/lib/core/transaction/AssetTransferTransaction";
+import { U64 } from "codechain-sdk/lib/core/U64";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake160 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
-import { calculateNonce, getConfig, haveConfig, sendParcel } from "./util";
+import { calculateSeq, getConfig, haveConfig, sendParcel } from "./util";
 
 interface Account {
     address: string;
@@ -86,7 +87,7 @@ function transferOutput(
         lockScriptHash: H160.ensure(blake160(script)),
         parameters: [],
         assetType,
-        amount: Math.min(10, -Math.floor(Math.log(Math.random())))
+        amount: new U64(Math.min(10, -Math.floor(Math.log(Math.random()))))
     });
 }
 function burnOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
@@ -99,7 +100,7 @@ function freeOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
 }
 
 function addOutput(tx: AssetTransferTransaction, output: AssetTransferOutput) {
-    if (output.amount !== 0) {
+    if (!output.amount.isEqualTo(0)) {
         tx.addOutputs(output);
     }
 }
@@ -111,40 +112,38 @@ async function airdropOilParcel(
     oilPassphrase: string,
     keyStore: KeyStore
 ): Promise<[Parcel, Asset]> {
-    const nonce = Math.floor(Math.random() * 10000);
-    const tx = sdk.core.createAssetTransferTransaction({
-        nonce,
+    const transaction = sdk.core.createAssetTransferTransaction({
         burns: [],
         inputs: [],
         outputs: []
     });
-    tx.addInputs(oilAsset);
+    transaction.addInputs(oilAsset);
 
     const burn = burnOutput(sdk, oilAsset.assetType);
     const free = freeOutput(sdk, oilAsset.assetType);
 
-    tx.addOutputs({
+    transaction.addOutputs({
         recipient: oilOwner,
-        amount: oilAsset.amount - burn.amount - free.amount,
+        amount: U64.minus(U64.minus(oilAsset.amount, burn.amount), free.amount),
         assetType: oilAsset.assetType
     });
     if (Math.random() < 0.5) {
-        addOutput(tx, burn);
-        addOutput(tx, free);
+        addOutput(transaction, burn);
+        addOutput(transaction, free);
     } else {
-        addOutput(tx, free);
-        addOutput(tx, burn);
+        addOutput(transaction, free);
+        addOutput(transaction, burn);
     }
 
-    await sdk.key.signTransactionInput(tx, 0, {
+    await sdk.key.signTransactionInput(transaction, 0, {
         keyStore,
         passphrase: oilPassphrase
     });
     return [
-        sdk.core.createAssetTransactionGroupParcel({
-            transactions: [tx]
+        sdk.core.createAssetTransactionParcel({
+            transaction
         }),
-        tx.getTransferredAsset(0)
+        transaction.getTransferredAsset(0)
     ];
 }
 
@@ -189,13 +188,13 @@ async function main() {
                 excludedAccountList,
                 reward
             );
-            const nonce = await calculateNonce(sdk, payer);
+            const seq = await calculateSeq(sdk, payer);
             await sendParcel(
                 sdk,
                 payer,
                 payerPassphrase,
                 keyStore,
-                nonce,
+                seq,
                 parcel
             );
             console.log("CCC is airdropped");
@@ -219,13 +218,13 @@ async function main() {
                     oil.passphrase,
                     keyStore
                 );
-                const nonce = await calculateNonce(sdk, payer);
+                const seq = await calculateSeq(sdk, payer);
                 await sendParcel(
                     sdk,
                     payer,
                     payerPassphrase,
                     keyStore,
-                    nonce,
+                    seq,
                     oilParcel
                 );
                 console.log(

@@ -1,11 +1,10 @@
 import { SDK } from "codechain-sdk";
 import { AssetMintTransaction } from "codechain-sdk/lib/core/transaction/AssetMintTransaction";
-import { calculateNonce, getConfig, sendParcel } from "./util";
+import { calculateSeq, getConfig, sendParcel } from "./util";
 
 function createMintOilTx(sdk: SDK, oilOwner: string): AssetMintTransaction {
     const assetAcheme = sdk.core.createAssetScheme({
         shardId: 0,
-        worldId: 0,
         metadata: JSON.stringify({
             name: "petrol",
             description: "A helicopter needs petrol",
@@ -14,11 +13,9 @@ function createMintOilTx(sdk: SDK, oilOwner: string): AssetMintTransaction {
         }),
         amount: 1e10
     });
-    const nonce = Math.floor(Math.random() * 1000);
     return sdk.core.createAssetMintTransaction({
         scheme: assetAcheme,
-        recipient: oilOwner,
-        nonce
+        recipient: oilOwner
     });
 }
 
@@ -34,14 +31,14 @@ async function main() {
 
     const mintOilTx = createMintOilTx(sdk, oilOwner);
 
-    const mintParcel = sdk.core.createAssetTransactionGroupParcel({
-        transactions: [mintOilTx]
+    const mintParcel = sdk.core.createAssetTransactionParcel({
+        transaction: mintOilTx
     });
 
-    const nonce = await calculateNonce(sdk, payer);
+    const seq = await calculateSeq(sdk, payer);
 
     const keyStore = await sdk.key.createLocalKeyStore();
-    await sendParcel(sdk, payer, payerPassphrase, keyStore, nonce, mintParcel);
+    await sendParcel(sdk, payer, payerPassphrase, keyStore, seq, mintParcel);
 
     console.log(`oil: ${mintOilTx.hash().toEncodeObject()}`);
 }
