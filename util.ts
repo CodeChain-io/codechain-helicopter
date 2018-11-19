@@ -1,20 +1,21 @@
 import { SDK } from "codechain-sdk";
 import { Parcel } from "codechain-sdk/lib/core/Parcel";
-import { U256 } from "codechain-sdk/lib/core/U256";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import * as config from "config";
 
-export async function calculateNonce(sdk: SDK, payer: string): Promise<U256> {
-    const prevNonce = await sdk.rpc.chain.getNonce(payer);
+export async function calculateSeq(sdk: SDK, payer: string): Promise<number> {
+    const prevSeq = await sdk.rpc.chain.getSeq(payer);
     const pendingParcels = await sdk.rpc.chain.getPendingParcels();
     const payerParcels = pendingParcels.filter(
-        parcel => parcel.getSignerAddress().value === payer
+        parcel =>
+            parcel.getSignerAccountId().value ===
+            SDK.Core.classes.PlatformAddress.ensure(payer).accountId.value
     );
 
     if (payerParcels.length === 0) {
-        return await sdk.rpc.chain.getNonce(payer);
+        return await sdk.rpc.chain.getSeq(payer);
     }
-    return new U256(prevNonce.value.plus(payerParcels.length));
+    return prevSeq + payerParcels.length;
 }
 
 export async function sendParcel(
@@ -22,14 +23,14 @@ export async function sendParcel(
     account: string,
     passphrase: string,
     keyStore: KeyStore,
-    nonce: U256,
+    seq: number,
     parcel: Parcel
 ): Promise<void> {
     const signedParcel = await sdk.key.signParcel(parcel, {
         account,
         keyStore,
         fee: 10,
-        nonce,
+        seq,
         passphrase
     });
     await sdk.rpc.chain.sendSignedParcel(signedParcel);
