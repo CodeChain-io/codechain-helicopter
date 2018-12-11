@@ -1,39 +1,39 @@
 import { SDK } from "codechain-sdk";
-import { Parcel } from "codechain-sdk/lib/core/Parcel";
+import { Transaction } from "codechain-sdk/lib/core/classes";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import * as config from "config";
 
 export async function calculateSeq(sdk: SDK, payer: string): Promise<number> {
     const prevSeq = await sdk.rpc.chain.getSeq(payer);
-    const pendingParcels = await sdk.rpc.chain.getPendingParcels();
-    const payerParcels = pendingParcels.filter(
-        parcel =>
-            parcel.getSignerAccountId().value ===
+    const pendingTransactions = await sdk.rpc.chain.getPendingTransactions();
+    const payerTransactions = pendingTransactions.filter(
+        transaction =>
+            transaction.getSignerAccountId().value ===
             SDK.Core.classes.PlatformAddress.ensure(payer).accountId.value
     );
 
-    if (payerParcels.length === 0) {
+    if (payerTransactions.length === 0) {
         return await sdk.rpc.chain.getSeq(payer);
     }
-    return prevSeq + payerParcels.length;
+    return prevSeq + payerTransactions.length;
 }
 
-export async function sendParcel(
+export async function sendTransaction(
     sdk: SDK,
     account: string,
     passphrase: string,
     keyStore: KeyStore,
     seq: number,
-    parcel: Parcel
+    transaction: Transaction
 ): Promise<void> {
-    const signedParcel = await sdk.key.signParcel(parcel, {
+    const signedTransaction = await sdk.key.signTransaction(transaction, {
         account,
         keyStore,
         fee: 10,
         seq,
         passphrase
     });
-    await sdk.rpc.chain.sendSignedParcel(signedParcel);
+    await sdk.rpc.chain.sendSignedTransaction(signedTransaction);
 }
 
 export function getConfig<T>(field: string): T {
