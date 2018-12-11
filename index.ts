@@ -1,18 +1,17 @@
 import { BigNumber } from "bignumber.js";
 import { SDK } from "codechain-sdk";
 import { Asset } from "codechain-sdk/lib/core/Asset";
+import { Pay, TransferAsset } from "codechain-sdk/lib/core/classes";
 import { H160 } from "codechain-sdk/lib/core/H160";
 import { H256 } from "codechain-sdk/lib/core/H256";
-import { Parcel } from "codechain-sdk/lib/core/Parcel";
 import { Script } from "codechain-sdk/lib/core/Script";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
-import { AssetTransferTransaction } from "codechain-sdk/lib/core/transaction/AssetTransferTransaction";
 import { U64 } from "codechain-sdk/lib/core/U64";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake160 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
-import { calculateSeq, getConfig, haveConfig, sendParcel } from "./util";
+import { calculateSeq, getConfig, haveConfig, sendTransaction } from "./util";
 
 interface Account {
     address: string;
@@ -62,17 +61,17 @@ async function chooseAccount(
     return getRandomAccount(accounts);
 }
 
-async function airdropCCCParcel(
+async function airdropCCCTransaction(
     sdk: SDK,
     payer: string,
     excludedAccountList: string[],
     amount: number
-): Promise<Parcel> {
+): Promise<Pay> {
     const recipient = await chooseAccount(payer, excludedAccountList);
 
     console.log(`${recipient} has won the lottery!`);
 
-    return sdk.core.createPaymentParcel({
+    return sdk.core.createPayTransaction({
         recipient,
         amount
     });
@@ -99,20 +98,20 @@ function freeOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
     return transferOutput(sdk, assetType, freeScript);
 }
 
-function addOutput(tx: AssetTransferTransaction, output: AssetTransferOutput) {
+function addOutput(tx: TransferAsset, output: AssetTransferOutput) {
     if (!output.amount.isEqualTo(0)) {
         tx.addOutputs(output);
     }
 }
 
-async function airdropOilParcel(
+async function airdropOilTransaction(
     sdk: SDK,
     oilAsset: Asset,
     oilOwner: string,
     oilPassphrase: string,
     keyStore: KeyStore
-): Promise<[Parcel, Asset]> {
-    const transaction = sdk.core.createAssetTransferTransaction({
+): Promise<[TransferAsset, Asset]> {
+    const transaction = sdk.core.createTransferAssetTransaction({
         burns: [],
         inputs: [],
         outputs: []
@@ -139,12 +138,7 @@ async function airdropOilParcel(
         keyStore,
         passphrase: oilPassphrase
     });
-    return [
-        sdk.core.createAssetTransactionParcel({
-            transaction
-        }),
-        transaction.getTransferredAsset(0)
-    ];
+    return [transaction, transaction.getTransferredAsset(0)];
 }
 
 async function main() {
@@ -182,20 +176,20 @@ async function main() {
 
     while (true) {
         try {
-            const parcel = await airdropCCCParcel(
+            const transaction = await airdropCCCTransaction(
                 sdk,
                 payer,
                 excludedAccountList,
                 reward
             );
             const seq = await calculateSeq(sdk, payer);
-            await sendParcel(
+            await sendTransaction(
                 sdk,
                 payer,
                 payerPassphrase,
                 keyStore,
                 seq,
-                parcel
+                transaction
             );
             console.log("CCC is airdropped");
         } catch (err) {
@@ -208,10 +202,10 @@ async function main() {
                 continue;
             }
             try {
-                const [oilParcel, newOilAsset]: [
-                    Parcel,
+                const [oilTransaction, newOilAsset]: [
+                    TransferAsset,
                     Asset
-                ] = await airdropOilParcel(
+                ] = await airdropOilTransaction(
                     sdk,
                     oil.asset,
                     oil.owner,
@@ -219,16 +213,16 @@ async function main() {
                     keyStore
                 );
                 const seq = await calculateSeq(sdk, payer);
-                await sendParcel(
+                await sendTransaction(
                     sdk,
                     payer,
                     payerPassphrase,
                     keyStore,
                     seq,
-                    oilParcel
+                    oilTransaction
                 );
                 console.log(
-                    `Oil is airdropped: ${oil.asset.outPoint.transactionHash.toEncodeObject()} => ${newOilAsset.outPoint.transactionHash.toEncodeObject()}`
+                    `Oil is airdropped: ${oil.asset.outPoint.tracker.toEncodeObject()} => ${newOilAsset.outPoint.tracker.toEncodeObject()}`
                 );
                 oil.asset = newOilAsset;
             } catch (err) {
