@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "bignumber.js": "^7.2.1",
-    "codechain-sdk": "https://github.com/HoOngEe/codechain-sdk-js.git#limited-asset-lib",
+    "codechain-sdk": "https://github.com/foriequal0/codechain-sdk-js.git#build/mandatory-supply",
     "config": "^2.0.1",
     "request-json": "^0.6.3",
     "request-promise-native": "^1.0.5",
