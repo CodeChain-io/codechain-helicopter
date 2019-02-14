@@ -11,7 +11,7 @@ function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
             icon_url:
                 "https://cdn.pixabay.com/photo/2013/07/12/12/52/oil-146440_960_720.png"
         }),
-        amount: 1e10
+        supply: 1e10
     });
     return sdk.core.createMintAssetTransaction({
         scheme: assetAcheme,

@@ -1,12 +1,10 @@
 import { BigNumber } from "bignumber.js";
+import { H160, H256, U64 } from "codechain-primitives";
 import { SDK } from "codechain-sdk";
 import { Asset } from "codechain-sdk/lib/core/Asset";
 import { Pay, TransferAsset } from "codechain-sdk/lib/core/classes";
-import { H160 } from "codechain-sdk/lib/core/H160";
-import { H256 } from "codechain-sdk/lib/core/H256";
 import { Script } from "codechain-sdk/lib/core/Script";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
-import { U64 } from "codechain-sdk/lib/core/U64";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake160 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
@@ -65,7 +63,7 @@ async function airdropCCCTransaction(
     sdk: SDK,
     payer: string,
     excludedAccountList: string[],
-    amount: number
+    quantity: number
 ): Promise<Pay> {
     const recipient = await chooseAccount(payer, excludedAccountList);
 
@@ -73,33 +71,43 @@ async function airdropCCCTransaction(
 
     return sdk.core.createPayTransaction({
         recipient,
-        amount
+        quantity
     });
 }
 
 function transferOutput(
     sdk: SDK,
     assetType: H256,
-    script: Buffer
+    script: Buffer,
+    shardId: number
 ): AssetTransferOutput {
     return new sdk.core.classes.AssetTransferOutput({
         lockScriptHash: H160.ensure(blake160(script)),
         parameters: [],
         assetType,
-        amount: new U64(Math.min(10, -Math.floor(Math.log(Math.random()))))
+        shardId,
+        quantity: new U64(Math.min(10, -Math.floor(Math.log(Math.random()))))
     });
 }
-function burnOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
+function burnOutput(
+    sdk: SDK,
+    assetType: H256,
+    shardId: number
+): AssetTransferOutput {
     const burnScript = Buffer.from([Script.Opcode.BURN]);
-    return transferOutput(sdk, assetType, burnScript);
+    return transferOutput(sdk, assetType, burnScript, shardId);
 }
-function freeOutput(sdk: SDK, assetType: H256): AssetTransferOutput {
+function freeOutput(
+    sdk: SDK,
+    assetType: H256,
+    shardId: number
+): AssetTransferOutput {
     const freeScript = Buffer.from([Script.Opcode.PUSHB, 1]);
-    return transferOutput(sdk, assetType, freeScript);
+    return transferOutput(sdk, assetType, freeScript, shardId);
 }
 
 function addOutput(tx: TransferAsset, output: AssetTransferOutput) {
-    if (!output.amount.isEqualTo(0)) {
+    if (!output.quantity.isEqualTo(0)) {
         tx.addOutputs(output);
     }
 }
@@ -118,13 +126,17 @@ async function airdropOilTransaction(
     });
     transaction.addInputs(oilAsset);
 
-    const burn = burnOutput(sdk, oilAsset.assetType);
-    const free = freeOutput(sdk, oilAsset.assetType);
+    const burn = burnOutput(sdk, oilAsset.assetType, oilAsset.shardId);
+    const free = freeOutput(sdk, oilAsset.assetType, oilAsset.shardId);
 
     transaction.addOutputs({
         recipient: oilOwner,
-        amount: U64.minus(U64.minus(oilAsset.amount, burn.amount), free.amount),
-        assetType: oilAsset.assetType
+        quantity: U64.minus(
+            U64.minus(oilAsset.quantity, burn.quantity),
+            free.quantity
+        ),
+        assetType: oilAsset.assetType,
+        shardId: oilAsset.shardId
     });
     if (Math.random() < 0.5) {
         addOutput(transaction, burn);
@@ -162,7 +174,7 @@ async function main() {
         const tx = new H256(getConfig<string>("oil.tx"));
         const owner = getConfig<string>("oil.owner");
         const passphrase = getConfig<string>("oil.passphrase");
-        const asset = await sdk.rpc.chain.getAsset(tx, 0);
+        const asset = await sdk.rpc.chain.getAsset(tx, 0, 0);
         if (!asset) {
             throw new Error("Cannot get an oil asset");
         }

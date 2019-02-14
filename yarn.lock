@@ -348,9 +348,9 @@ codechain-primitives@^0.4.4:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-"codechain-sdk@https://github.com/HoOngEe/codechain-sdk-js.git#limited-asset-lib":
+"codechain-sdk@https://github.com/foriequal0/codechain-sdk-js.git#build/mandatory-supply":
   version "0.5.1"
-  resolved "https://github.com/HoOngEe/codechain-sdk-js.git#c37bcdc7091b9191606b4f5b9809b52475058f66"
+  resolved "https://github.com/foriequal0/codechain-sdk-js.git#e4a61b4dc69733c3b0efe9baff378fffa9e3fe3f"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
