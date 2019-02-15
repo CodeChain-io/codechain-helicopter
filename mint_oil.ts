@@ -43,7 +43,7 @@ async function main() {
         mintOilTx
     );
 
-    console.log(`oil: ${mintOilTx.hash().toEncodeObject()}`);
+    console.log(`oil: ${mintOilTx.tracker().toEncodeObject()}`);
 }
 
 main()

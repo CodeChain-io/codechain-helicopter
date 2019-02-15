@@ -1,3 +1,4 @@
+import { H256 } from "codechain-primitives";
 import { SDK } from "codechain-sdk";
 import { Transaction } from "codechain-sdk/lib/core/classes";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
@@ -25,7 +26,7 @@ export async function sendTransaction(
     keyStore: KeyStore,
     seq: number,
     transaction: Transaction
-): Promise<void> {
+): Promise<H256> {
     const signedTransaction = await sdk.key.signTransaction(transaction, {
         account,
         keyStore,
@@ -33,7 +34,7 @@ export async function sendTransaction(
         seq,
         passphrase
     });
-    await sdk.rpc.chain.sendSignedTransaction(signedTransaction);
+    return await sdk.rpc.chain.sendSignedTransaction(signedTransaction);
 }
 
 export function getConfig<T>(field: string): T {
