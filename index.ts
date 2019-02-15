@@ -11,6 +11,8 @@ import * as request from "request-promise-native";
 import * as sleep from "sleep";
 import { calculateSeq, getConfig, haveConfig, sendTransaction } from "./util";
 
+const airdropOilWaitingLimit = 10;
+
 interface Account {
     address: string;
     balance: BigNumber;
@@ -117,12 +119,14 @@ async function airdropOilTransaction(
     oilAsset: Asset,
     oilOwner: string,
     oilPassphrase: string,
-    keyStore: KeyStore
+    keyStore: KeyStore,
+    dropInterval: number
 ): Promise<[TransferAsset, Asset]> {
     const transaction = sdk.core.createTransferAssetTransaction({
         burns: [],
         inputs: [],
-        outputs: []
+        outputs: [],
+        expiration: dropInterval * airdropOilWaitingLimit + Date.now()
     });
     transaction.addInputs(oilAsset);
 
@@ -153,6 +157,61 @@ async function airdropOilTransaction(
     return [transaction, transaction.getTransferredAsset(0)];
 }
 
+async function getOilFromConfig(sdk: SDK) {
+    if (haveConfig("oil.tx")) {
+        const tx = new H256(getConfig<string>("oil.tx"));
+        const owner = getConfig<string>("oil.owner");
+        const passphrase = getConfig<string>("oil.passphrase");
+        const asset = await sdk.rpc.chain.getAsset(tx, 0, 0);
+        if (!asset) {
+            throw new Error("Cannot get an oil asset");
+        }
+        return {
+            tx,
+            owner,
+            passphrase,
+            asset
+        };
+    }
+    return null;
+}
+
+async function getInvoice(sdk: SDK, txHash: H256): Promise<boolean | null> {
+    return sdk.rpc.chain.getInvoice(txHash);
+}
+
+async function handlePendingInfos(
+    sdk: SDK,
+    pendingOilInfos: { txHash: H256; oilAsset: Asset }[],
+    prevLastSuccessful: Asset
+) {
+    let lastSuccessfulAsset = prevLastSuccessful;
+    while (pendingOilInfos.length !== 0) {
+        const info = pendingOilInfos[0];
+        const invoice = await getInvoice(sdk, info.txHash);
+
+        const ifExpirationLimitExceeded =
+            invoice === null && pendingOilInfos.length > airdropOilWaitingLimit;
+        const ifFailsInTheMiddle = invoice === false;
+
+        if (!invoice) {
+            if (ifExpirationLimitExceeded || ifFailsInTheMiddle) {
+                return {
+                    resetAsset: true,
+                    lastSuccessfulAsset
+                };
+            }
+            break;
+        }
+        lastSuccessfulAsset = info.oilAsset;
+        pendingOilInfos.shift();
+    }
+    return {
+        resetAsset: false,
+        lastSuccessfulAsset
+    };
+}
+
 async function main() {
     const rpcUrl = getConfig<string>("rpc_url");
     const networkId = getConfig<string>("network_id");
@@ -169,22 +228,10 @@ async function main() {
     const dropInterval = getConfig<number>("drop_interval");
     const excludedAccountList = getConfig<string[]>("exclude");
 
-    let oil = null;
-    if (haveConfig("oil.tx")) {
-        const tx = new H256(getConfig<string>("oil.tx"));
-        const owner = getConfig<string>("oil.owner");
-        const passphrase = getConfig<string>("oil.passphrase");
-        const asset = await sdk.rpc.chain.getAsset(tx, 0, 0);
-        if (!asset) {
-            throw new Error("Cannot get an oil asset");
-        }
-        oil = {
-            tx,
-            owner,
-            passphrase,
-            asset
-        };
-    }
+    const oil = await getOilFromConfig(sdk);
+
+    let pendingOilInfos = [];
+    let lastSuccessfulAsset: Asset | undefined;
 
     while (true) {
         try {
@@ -214,6 +261,21 @@ async function main() {
                 continue;
             }
             try {
+                if (lastSuccessfulAsset === undefined) {
+                    lastSuccessfulAsset = oil.asset;
+                }
+                const handlingResult = await handlePendingInfos(
+                    sdk,
+                    pendingOilInfos,
+                    lastSuccessfulAsset
+                );
+
+                lastSuccessfulAsset = handlingResult.lastSuccessfulAsset;
+                if (handlingResult.resetAsset) {
+                    oil.asset = lastSuccessfulAsset;
+                    pendingOilInfos = [];
+                }
+
                 const [oilTransaction, newOilAsset]: [
                     TransferAsset,
                     Asset
@@ -222,10 +284,11 @@ async function main() {
                     oil.asset,
                     oil.owner,
                     oil.passphrase,
-                    keyStore
+                    keyStore,
+                    dropInterval
                 );
                 const seq = await calculateSeq(sdk, payer);
-                await sendTransaction(
+                const sentOilTransactionHash = await sendTransaction(
                     sdk,
                     payer,
                     payerPassphrase,
@@ -234,13 +297,36 @@ async function main() {
                     oilTransaction
                 );
                 console.log(
+                    `Oil transaction with hash ${sentOilTransactionHash.toEncodeObject()} has been sent`
+                );
+                console.log(
                     `Oil is airdropped: ${oil.asset.outPoint.tracker.toEncodeObject()} => ${newOilAsset.outPoint.tracker.toEncodeObject()}`
                 );
+
                 oil.asset = newOilAsset;
+                sleep.sleep(dropInterval);
+
+                const invoice = await getInvoice(sdk, sentOilTransactionHash);
+                const isTrasnactionCompleted = invoice === true;
+                const isTransactionNotCompleted = invoice === null;
+
+                if (isTrasnactionCompleted) {
+                    lastSuccessfulAsset = newOilAsset;
+                    pendingOilInfos = [];
+                } else if (isTransactionNotCompleted) {
+                    const info: { txHash: H256; oilAsset: Asset } = {
+                        txHash: sentOilTransactionHash,
+                        oilAsset: newOilAsset
+                    };
+                    pendingOilInfos.push(info);
+                } else {
+                    // the transaction failed
+                    oil.asset = lastSuccessfulAsset;
+                }
             } catch (err) {
                 console.error(err);
+                sleep.sleep(dropInterval);
             }
-            sleep.sleep(dropInterval);
         }
     }
 }
