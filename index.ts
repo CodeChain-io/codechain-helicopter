@@ -36,8 +36,10 @@ function getRandomAccount(accounts: Account[]): string {
 }
 
 async function fetchAccounts(): Promise<Account[]> {
+    const indexerUrl = getConfig<string>("indexer_url");
+    const accountsUrl = `${indexerUrl}/api/account`;
     const items: { address: string; balance: string }[] = await request({
-        url: getConfig<string>("accounts_url").toString(),
+        url: accountsUrl,
         json: true
     });
 
@@ -157,17 +159,31 @@ async function airdropOilTransaction(
     return [transaction, transaction.getTransferredAsset(0)];
 }
 
+async function fetchOilTracker(
+    owner: string,
+    assetType: string
+): Promise<H256> {
+    const indexerUrl = getConfig<string>("indexer_url");
+    const oilUtxoUrl = `${indexerUrl}/api/utxo?address=${owner}&assetType=${assetType}`;
+    const utxos: { transactionTracker: string }[] = await request({
+        url: oilUtxoUrl,
+        json: true
+    });
+    return new H256(utxos[0].transactionTracker);
+}
+
 async function getOilFromConfig(sdk: SDK) {
-    if (haveConfig("oil.tx")) {
-        const tx = new H256(getConfig<string>("oil.tx"));
+    if (haveConfig("oil.owner") && haveConfig("oil.asset_type")) {
         const owner = getConfig<string>("oil.owner");
         const passphrase = getConfig<string>("oil.passphrase");
-        const asset = await sdk.rpc.chain.getAsset(tx, 0, 0);
+        const assetType = getConfig<string>("oil.asset_type");
+        const tracker = await fetchOilTracker(owner, assetType);
+        const asset = await sdk.rpc.chain.getAsset(tracker, 0, 0);
         if (!asset) {
             throw new Error("Cannot get an oil asset");
         }
         return {
-            tx,
+            tracker,
             owner,
             passphrase,
             asset

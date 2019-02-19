@@ -1,5 +1,5 @@
 {
-  "accounts_url": "https://husky.codechain.io/explorer/api/accounts" ,
+  "indexer_url": "https://husky.codechain.io/explorer",
   "payer": {
     "payer" : null,
     "passphrase" : null
@@ -8,7 +8,7 @@
   "oil": {
     "owner": null,
     "passphrase" : null,
-    "tx" : null
+    "asset_type": null
   },
   "network_id": null,
   "rpc_url" : null,
