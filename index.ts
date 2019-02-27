@@ -192,8 +192,11 @@ async function getOilFromConfig(sdk: SDK) {
     return null;
 }
 
-async function getInvoice(sdk: SDK, txHash: H256): Promise<boolean | null> {
-    return sdk.rpc.chain.getInvoice(txHash);
+async function getTransactionResult(
+    sdk: SDK,
+    txHash: H256
+): Promise<boolean | null> {
+    return sdk.rpc.chain.getTransactionResult(txHash);
 }
 
 async function handlePendingInfos(
@@ -204,13 +207,13 @@ async function handlePendingInfos(
     let lastSuccessfulAsset = prevLastSuccessful;
     while (pendingOilInfos.length !== 0) {
         const info = pendingOilInfos[0];
-        const invoice = await getInvoice(sdk, info.txHash);
+        const result = await getTransactionResult(sdk, info.txHash);
 
         const ifExpirationLimitExceeded =
-            invoice === null && pendingOilInfos.length > airdropOilWaitingLimit;
-        const ifFailsInTheMiddle = invoice === false;
+            result === null && pendingOilInfos.length > airdropOilWaitingLimit;
+        const ifFailsInTheMiddle = result === false;
 
-        if (!invoice) {
+        if (!result) {
             if (ifExpirationLimitExceeded || ifFailsInTheMiddle) {
                 return {
                     resetAsset: true,
@@ -322,7 +325,10 @@ async function main() {
                 oil.asset = newOilAsset;
                 sleep.sleep(dropInterval);
 
-                const invoice = await getInvoice(sdk, sentOilTransactionHash);
+                const invoice = await getTransactionResult(
+                    sdk,
+                    sentOilTransactionHash
+                );
                 const isTrasnactionCompleted = invoice === true;
                 const isTransactionNotCompleted = invoice === null;
 
