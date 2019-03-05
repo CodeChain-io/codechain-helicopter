@@ -101,6 +101,13 @@ export async function chooseAccount(
     return getRandomAccount(accounts);
 }
 
+export async function getTransactionResult(
+    sdk: SDK,
+    txHash: H256
+): Promise<boolean | null> {
+    return sdk.rpc.chain.getTransactionResult(txHash);
+}
+
 export class PayerInfo {
     constructor(
         private sdk: SDK,
@@ -119,4 +126,37 @@ export class PayerInfo {
             transaction
         );
     }
+}
+
+async function fetchOilTracker(
+    owner: string,
+    assetType: string
+): Promise<H256> {
+    const indexerUrl = getConfig<string>("indexer_url");
+    const oilUtxoUrl = `${indexerUrl}/api/utxo?address=${owner}&assetType=${assetType}`;
+    const utxos: { transactionTracker: string }[] = await request({
+        url: oilUtxoUrl,
+        json: true
+    });
+    return new H256(utxos[0].transactionTracker);
+}
+
+export async function getOilFromConfig(sdk: SDK) {
+    if (haveConfig("oil.owner") && haveConfig("oil.asset_type")) {
+        const owner = getConfig<string>("oil.owner");
+        const passphrase = getConfig<string>("oil.passphrase");
+        const assetType = getConfig<string>("oil.asset_type");
+        const tracker = await fetchOilTracker(owner, assetType);
+        const asset = await sdk.rpc.chain.getAsset(tracker, 0, 0);
+        if (!asset) {
+            throw new Error("Cannot get an oil asset");
+        }
+        return {
+            tracker,
+            owner,
+            passphrase,
+            asset
+        };
+    }
+    return null;
 }
