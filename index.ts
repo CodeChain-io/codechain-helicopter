@@ -8,7 +8,9 @@ import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake160 } from "codechain-sdk/lib/utils";
 import * as request from "request-promise-native";
 import * as sleep from "sleep";
+import { unwrapCCCTransaction } from "./unwrapCCC";
 import { chooseAccount, getConfig, haveConfig, PayerInfo } from "./util";
+import { wrapCCCTransaction } from "./wrapCCC";
 
 const airdropOilWaitingLimit = 10;
 
@@ -196,6 +198,7 @@ async function main() {
     const excludedAccountList = getConfig<string[]>("exclude");
 
     const oil = await getOilFromConfig(sdk);
+    const cccRecipient = getConfig<string>("ccc_recipient");
 
     let pendingOilInfos = [];
     let lastSuccessfulAsset: Asset | undefined;
@@ -210,6 +213,31 @@ async function main() {
             );
             await payerInfo.sendTransaction(transaction);
             console.log("CCC is airdropped");
+        } catch (err) {
+            console.error(err);
+        }
+        sleep.sleep(dropInterval);
+
+        try {
+            const wrapCCC = await wrapCCCTransaction(
+                sdk,
+                payer,
+                reward,
+                cccRecipient
+            );
+            const wrapTxHash = await payerInfo.sendTransaction(wrapCCC);
+            console.log(`CCC is wrapped with transaction hash ${wrapTxHash}`);
+            sleep.sleep(dropInterval);
+
+            const unwrapCCC = await unwrapCCCTransaction(
+                sdk,
+                wrapCCC,
+                networkId
+            );
+            const unwrapTxHash = await payerInfo.sendTransaction(unwrapCCC);
+            console.log(
+                `CCC is unwrapped with transaction hash ${unwrapTxHash}`
+            );
         } catch (err) {
             console.error(err);
         }
