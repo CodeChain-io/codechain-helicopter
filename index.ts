@@ -64,6 +64,7 @@ async function main() {
             const unwrapCCC = await unwrapCCCTransaction(
                 sdk,
                 wrapCCC,
+                payer,
                 networkId
             );
             const unwrapTxHash = await payerInfo.sendTransaction(unwrapCCC);
