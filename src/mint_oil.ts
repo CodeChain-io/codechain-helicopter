@@ -1,9 +1,10 @@
 import { SDK } from "codechain-sdk";
-import { MintAsset } from "codechain-sdk/lib/core/classes";
+import { Asset, MintAsset } from "codechain-sdk/lib/core/classes";
+import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { calculateSeq, getConfig, sendTransaction } from "./util";
 
 function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
-    const assetAcheme = sdk.core.createAssetScheme({
+    const scheme = sdk.core.createAssetScheme({
         shardId: 0,
         metadata: JSON.stringify({
             name: "petrol",
@@ -14,9 +15,27 @@ function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
         supply: 1e10
     });
     return sdk.core.createMintAssetTransaction({
-        scheme: assetAcheme,
+        scheme,
         recipient: oilOwner
     });
+}
+
+async function sendMintOilTx(
+    sdk: SDK,
+    params: {
+        payer: string;
+        passphrase: string;
+        keyStore: KeyStore;
+        mintOilTx: MintAsset;
+    }
+): Promise<Asset> {
+    const { payer, passphrase, keyStore, mintOilTx } = params;
+
+    const seq = await calculateSeq(sdk, payer);
+
+    await sendTransaction(sdk, payer, passphrase, keyStore, seq, mintOilTx);
+
+    return mintOilTx.getMintedAsset();
 }
 
 async function main() {
@@ -29,25 +48,16 @@ async function main() {
     const payer = getConfig<string>("payer.payer");
     const payerPassphrase = getConfig<string>("payer.passphrase");
 
-    const mintOilTx = createMintOilTx(sdk, oilOwner);
-
-    const seq = await calculateSeq(sdk, payer);
-
     const keyStore = await sdk.key.createLocalKeyStore();
-    await sendTransaction(
-        sdk,
+    const mintOilTx = createMintOilTx(sdk, oilOwner);
+    const mintedOil = await sendMintOilTx(sdk, {
         payer,
-        payerPassphrase,
+        passphrase: payerPassphrase,
         keyStore,
-        seq,
         mintOilTx
-    );
+    });
 
-    console.log(
-        `Asset type of oil: ${mintOilTx
-            .getMintedAsset()
-            .assetType.toEncodeObject()}`
-    );
+    console.log(`Asset type of oil: ${mintedOil.assetType.toEncodeObject()}`);
 }
 
 main()
