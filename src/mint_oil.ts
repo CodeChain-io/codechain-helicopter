@@ -10,7 +10,8 @@ function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
             name: "petrol",
             description: "A helicopter needs petrol",
             icon_url:
-                "https://cdn.pixabay.com/photo/2013/07/12/12/52/oil-146440_960_720.png"
+                "https://cdn.pixabay.com/photo/2013/07/12/12/52/oil-146440_960_720.png",
+            minted_at: Date().toString()
         }),
         supply: 1e10
     });
