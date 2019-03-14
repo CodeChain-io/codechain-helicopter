@@ -43,7 +43,11 @@ async function main() {
         mintOilTx
     );
 
-    console.log(`oil: ${mintOilTx.tracker().toEncodeObject()}`);
+    console.log(
+        `Asset type of oil: ${mintOilTx
+            .getMintedAsset()
+            .assetType.toEncodeObject()}`
+    );
 }
 
 main()
