@@ -3,7 +3,7 @@ import { Asset, MintAsset } from "codechain-sdk/lib/core/classes";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { calculateSeq, getConfig, sendTransaction } from "./util";
 
-function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
+export function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
     const scheme = sdk.core.createAssetScheme({
         shardId: 0,
         metadata: JSON.stringify({
@@ -21,7 +21,7 @@ function createMintOilTx(sdk: SDK, oilOwner: string): MintAsset {
     });
 }
 
-async function sendMintOilTx(
+export async function sendMintOilTx(
     sdk: SDK,
     params: {
         payer: string;
@@ -61,6 +61,8 @@ async function main() {
     console.log(`Asset type of oil: ${mintedOil.assetType.toEncodeObject()}`);
 }
 
-main()
-    .then(() => console.log("finish"))
-    .catch(err => console.error(err));
+if (require.main === module) {
+    main()
+        .then(() => console.log("finish"))
+        .catch(err => console.error(err));
+}

@@ -1,0 +1,18 @@
+{
+  "indexer_url": "http://localhost:9001",
+  "payer": {
+    "payer" : "",
+    "passphrase" : ""
+  },
+  "exclude": [],
+  "oil": {
+    "owner": "",
+    "passphrase" : "",
+    "asset_type": ""
+  },
+  "ccc_recipient": "",
+  "network_id": "tc",
+  "rpc_url" : "http://localhost:8080",
+  "drop_interval": 10,
+  "reward": 1
+}
