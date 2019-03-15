@@ -19,9 +19,24 @@ if (require.main === module) {
 
         const keyStore = await sdk.key.createLocalKeyStore();
 
-        const cccRecipient = (await createWCCCRecipient(sdk)).toString();
+        const cccRecipient = (haveConfig("ccc_recipient"))
+            ? getConfig<string>("ccc_recipient")
+            : (await createWCCCRecipient(sdk)).toString();
 
-        const oil = await getOilFromConfig(sdk)!;
+        let oil = await getOilFromConfig(sdk);
+        if (oil == null) {
+            const passphrase = getConfig<string>("oil.passphrase");
+            const oilOwner = (await sdk.key.createAssetTransferAddress({keyStore, passphrase})).toString();
+            const mintOilTx = createMintOilTx(sdk, oilOwner);
+            const mintedOil = await sendMintOilTx(sdk, {
+                payer, passphrase: payerPassphrase, keyStore, mintOilTx
+            });
+            oil = { tracker: mintOilTx.tracker(),
+                owner: oilOwner,
+                passphrase, asset: mintedOil };
+            console.log(`New oil owner created: ${oilOwner}`);
+            console.log(`New oil tracker ${mintOilTx.tracker()}`);
+        }
 
         await main(sdk, keyStore, { payer, payerPassphrase, reward, dropInterval, excludedAccountList, cccRecipient, oil });
     })();

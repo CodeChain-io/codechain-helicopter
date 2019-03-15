@@ -29,7 +29,8 @@ export async function main(
         dropInterval,
         reward,
         payerPassphrase,
-        payer
+        payer,
+        oil
     } = params;
 
     const payerInfo = new PayerInfo(sdk, payer, payerPassphrase, keyStore);
