@@ -2,35 +2,37 @@ import { H256 } from "codechain-primitives";
 import { SDK } from "codechain-sdk";
 import { Asset } from "codechain-sdk/lib/core/Asset";
 import { TransferAsset } from "codechain-sdk/lib/core/classes";
+import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import * as sleep from "sleep";
 import { airdropCCCTransaction } from "./airdropCCC";
 import { airdropOilTransaction, handlePendingInfos } from "./airdropOil";
 import { unwrapCCCTransaction } from "./unwrapCCC";
-import {
-    getConfig,
-    getOilFromConfig,
-    getTransactionResult,
-    PayerInfo
-} from "./util";
+import { getTransactionResult, PayerInfo } from "./util";
 import { wrapCCCTransaction } from "./wrapCCC";
 
-export async function main() {
-    const rpcUrl = getConfig<string>("rpc_url");
-    const networkId = getConfig<string>("network_id");
-
-    const sdk = new SDK({ server: rpcUrl, networkId });
-    const keyStore = await sdk.key.createLocalKeyStore();
-    const payer = getConfig<string>("payer.payer");
-    const payerPassphrase = getConfig<string>("payer.passphrase");
+export async function main(
+    sdk: SDK,
+    keyStore: KeyStore,
+    params: {
+        cccRecipient: string;
+        excludedAccountList: string[];
+        dropInterval: number;
+        reward: number;
+        payerPassphrase: string;
+        payer: string;
+        oil: { tracker: H256; owner: string; passphrase: string; asset: Asset };
+    }
+) {
+    const {
+        cccRecipient,
+        excludedAccountList,
+        dropInterval,
+        reward,
+        payerPassphrase,
+        payer
+    } = params;
 
     const payerInfo = new PayerInfo(sdk, payer, payerPassphrase, keyStore);
-    const reward = getConfig<number>("reward");
-
-    const dropInterval = getConfig<number>("drop_interval");
-    const excludedAccountList = getConfig<string[]>("exclude");
-
-    const oil = await getOilFromConfig(sdk);
-    const cccRecipient = getConfig<string>("ccc_recipient");
 
     let pendingOilInfos = [];
     let lastSuccessfulAsset: Asset | undefined;
@@ -61,12 +63,7 @@ export async function main() {
             console.log(`CCC is wrapped with transaction hash ${wrapTxHash}`);
             sleep.sleep(dropInterval);
 
-            const unwrapCCC = await unwrapCCCTransaction(
-                sdk,
-                wrapCCC,
-                payer,
-                networkId
-            );
+            const unwrapCCC = await unwrapCCCTransaction(sdk, wrapCCC, payer);
             const unwrapTxHash = await payerInfo.sendTransaction(unwrapCCC);
             console.log(
                 `CCC is unwrapped with transaction hash ${unwrapTxHash}`

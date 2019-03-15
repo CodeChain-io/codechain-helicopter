@@ -1,7 +1,7 @@
 import { BigNumber } from "bignumber.js";
 import { H256 } from "codechain-primitives";
 import { SDK } from "codechain-sdk";
-import { Transaction } from "codechain-sdk/lib/core/classes";
+import { Asset, Transaction } from "codechain-sdk/lib/core/classes";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import * as config from "config";
 import * as request from "request-promise-native";
@@ -141,7 +141,14 @@ async function fetchOilTracker(
     return new H256(utxos[0].transactionTracker);
 }
 
-export async function getOilFromConfig(sdk: SDK) {
+export async function getOilFromConfig(
+    sdk: SDK
+): Promise<{
+    tracker: H256;
+    owner: string;
+    passphrase: string;
+    asset: Asset;
+} | null> {
     if (haveConfig("oil.owner") && haveConfig("oil.asset_type")) {
         const owner = getConfig<string>("oil.owner");
         const passphrase = getConfig<string>("oil.passphrase");
