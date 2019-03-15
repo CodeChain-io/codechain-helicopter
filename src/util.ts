@@ -9,7 +9,7 @@ import * as request from "request-promise-native";
 export async function calculateSeq(sdk: SDK, payer: string): Promise<number> {
     const prevSeq = await sdk.rpc.chain.getSeq(payer);
     const pendingTransactions = await sdk.rpc.chain.getPendingTransactions();
-    const payerTransactions = pendingTransactions.filter(
+    const payerTransactions = pendingTransactions.transactions.filter(
         transaction =>
             transaction.getSignerAccountId().value ===
             SDK.Core.classes.PlatformAddress.ensure(payer).accountId.value
