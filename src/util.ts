@@ -90,12 +90,10 @@ async function fetchAccounts(): Promise<Account[]> {
 }
 
 export async function chooseAccount(
-    payer: string,
     excludedAccountList: string[]
 ): Promise<string> {
     const accounts = (await fetchAccounts()).filter(
         account =>
-            account.address !== payer &&
             !account.balance.isZero() &&
             excludedAccountList.indexOf(account.address) === -1
     );

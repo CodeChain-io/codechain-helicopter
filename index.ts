@@ -13,7 +13,9 @@ if (require.main === module) {
         const payerPassphrase = getConfig<string>("payer.passphrase");
         const reward = getConfig<number>("reward");
         const dropInterval = getConfig<number>("drop_interval");
-        const excludedAccountList = getConfig<string[]>("exclude");
+        const excludedAccountList = getConfig<string[]>("exclude")
+            .concat((await sdk.rpc.chain.getGenesisAccounts()).map(account => account.value));
+        excludedAccountList.push(payer);
 
         const keyStore = await sdk.key.createLocalKeyStore();
 

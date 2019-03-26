@@ -4,11 +4,10 @@ import { chooseAccount } from "./util";
 
 export async function airdropCCCTransaction(
     sdk: SDK,
-    payer: string,
     excludedAccountList: string[],
     quantity: number
 ): Promise<Pay> {
-    const recipient = await chooseAccount(payer, excludedAccountList);
+    const recipient = await chooseAccount(excludedAccountList);
 
     console.log(`${recipient} has won the lottery!`);
 

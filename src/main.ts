@@ -47,7 +47,6 @@ export async function main(
         try {
             const transaction = await airdropCCCTransaction(
                 sdk,
-                payer,
                 excludedAccountList,
                 reward
             );
