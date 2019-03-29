@@ -101,11 +101,11 @@ export async function chooseAccount(
     return getRandomAccount(accounts);
 }
 
-export async function getTransactionResult(
+export async function containTransaction(
     sdk: SDK,
     txHash: H256
-): Promise<boolean | null> {
-    return sdk.rpc.chain.getTransactionResult(txHash);
+): Promise<boolean> {
+    return sdk.rpc.chain.containTransaction(txHash);
 }
 
 export class PayerInfo {

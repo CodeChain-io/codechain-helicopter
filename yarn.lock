@@ -501,10 +501,9 @@ codechain-primitives@^0.4.7:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-codechain-sdk@^0.6.0:
+"codechain-sdk@https://github.com/sgkim126/codechain-sdk-js.git#result-lib":
   version "0.6.0"
-  resolved "https://registry.yarnpkg.com/codechain-sdk/-/codechain-sdk-0.6.0.tgz#9bbcac07ee5004221b0b0d5910cfb6e98e40ee77"
-  integrity sha512-Fo2BnR39AHMArhlxL/jESoCnbipvHUVFrfc2OuI2gdCokI5+4Y1g+X+FSW6lVc4UjnaNP5MZ/upvNgMPfuXxNQ==
+  resolved "https://github.com/sgkim126/codechain-sdk-js.git#4ed32333c517d656b41b1bb904690d7b27a2aa84"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"

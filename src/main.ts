@@ -7,7 +7,7 @@ import * as sleep from "sleep";
 import { airdropCCCTransaction } from "./airdropCCC";
 import { airdropOilTransaction, handlePendingInfos } from "./airdropOil";
 import { unwrapCCCTransaction } from "./unwrapCCC";
-import { getTransactionResult, PayerInfo } from "./util";
+import { containTransaction, PayerInfo } from "./util";
 import { wrapCCCTransaction } from "./wrapCCC";
 
 export async function main(
@@ -118,12 +118,12 @@ export async function main(
                 oil.asset = newOilAsset;
                 sleep.sleep(dropInterval);
 
-                const invoice = await getTransactionResult(
+                const invoice = await containTransaction(
                     sdk,
                     sentOilTransactionHash
                 );
-                const isTrasnactionCompleted = invoice === true;
-                const isTransactionNotCompleted = invoice === null;
+                const isTrasnactionCompleted = invoice;
+                const isTransactionNotCompleted = !invoice;
 
                 if (isTrasnactionCompleted) {
                     lastSuccessfulAsset = newOilAsset;

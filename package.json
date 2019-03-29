@@ -15,7 +15,7 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "chain": "^0.1.3",
-    "codechain-sdk": "^0.6.0",
+    "codechain-sdk": "https://github.com/sgkim126/codechain-sdk-js.git#result-lib",
     "config": "^2.0.1",
     "request-promise-native": "^1.0.5",
     "sleep": "^5.2.3",
