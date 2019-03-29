@@ -46,7 +46,7 @@ export async function main(
                 excludedAccountList,
                 reward
             );
-            await payerInfo.sendTransaction(transaction);
+            await payerInfo.sendTransaction(transaction, 100);
             console.log("CCC is airdropped");
         } catch (err) {
             console.error(err);
@@ -60,12 +60,15 @@ export async function main(
                 reward,
                 cccRecipient
             );
-            const wrapTxHash = await payerInfo.sendTransaction(wrapCCC);
+            const wrapTxHash = await payerInfo.sendTransaction(wrapCCC, 100000);
             console.log(`CCC is wrapped with transaction hash ${wrapTxHash}`);
             sleep.sleep(dropInterval);
 
             const unwrapCCC = await unwrapCCCTransaction(sdk, wrapCCC, payer);
-            const unwrapTxHash = await payerInfo.sendTransaction(unwrapCCC);
+            const unwrapTxHash = await payerInfo.sendTransaction(
+                unwrapCCC,
+                100
+            );
             console.log(
                 `CCC is unwrapped with transaction hash ${unwrapTxHash}`
             );
@@ -106,7 +109,8 @@ export async function main(
                     dropInterval
                 );
                 const sentOilTransactionHash = await payerInfo.sendTransaction(
-                    oilTransaction
+                    oilTransaction,
+                    100
                 );
                 console.log(
                     `Oil transaction with hash ${sentOilTransactionHash.toEncodeObject()} has been sent`

@@ -27,12 +27,13 @@ export async function sendTransaction(
     passphrase: string,
     keyStore: KeyStore,
     seq: number,
+    fee: number,
     transaction: Transaction
 ): Promise<H256> {
     const signedTransaction = await sdk.key.signTransaction(transaction, {
         account,
         keyStore,
-        fee: 10,
+        fee,
         seq,
         passphrase
     });
@@ -115,7 +116,10 @@ export class PayerInfo {
         private payerPassPhrase: string,
         private keyStore: KeyStore
     ) {}
-    public async sendTransaction(transaction: Transaction): Promise<H256> {
+    public async sendTransaction(
+        transaction: Transaction,
+        fee: number
+    ): Promise<H256> {
         const seq = await calculateSeq(this.sdk, this.payer);
         return sendTransaction(
             this.sdk,
@@ -123,6 +127,7 @@ export class PayerInfo {
             this.payerPassPhrase,
             this.keyStore,
             seq,
+            fee,
             transaction
         );
     }

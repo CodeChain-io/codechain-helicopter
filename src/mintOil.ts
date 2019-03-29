@@ -34,7 +34,15 @@ export async function sendMintOilTx(
 
     const seq = await calculateSeq(sdk, payer);
 
-    await sendTransaction(sdk, payer, passphrase, keyStore, seq, mintOilTx);
+    await sendTransaction(
+        sdk,
+        payer,
+        passphrase,
+        keyStore,
+        seq,
+        100000,
+        mintOilTx
+    );
 
     return mintOilTx.getMintedAsset();
 }
