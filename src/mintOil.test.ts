@@ -36,7 +36,7 @@ describe("mint oil", async function() {
 
         const seq = await sdk.rpc.chain.getSeq(faucetAddress);
         const pay = sdk.core
-            .createPayTransaction({ recipient: payer, quantity: 1000 })
+            .createPayTransaction({ recipient: payer, quantity: 300000 })
             .sign({ secret: faucetSecret, seq, fee: 10 });
         await sdk.rpc.chain.sendSignedTransaction(pay);
     });
