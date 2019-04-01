@@ -14,13 +14,18 @@ export async function main(
     sdk: SDK,
     keyStore: KeyStore,
     params: {
-        cccRecipient: string;
+        cccRecipient: string | null;
         excludedAccountList: string[];
         dropInterval: number;
         reward: number;
         payerPassphrase: string;
         payer: string;
-        oil: { tracker: H256; owner: string; passphrase: string; asset: Asset };
+        oil: {
+            tracker: H256;
+            owner: string;
+            passphrase: string;
+            asset: Asset;
+        } | null;
     }
 ) {
     const {
@@ -53,29 +58,40 @@ export async function main(
         }
         sleep.sleep(dropInterval);
 
-        try {
-            const wrapCCC = await wrapCCCTransaction(
-                sdk,
-                payer,
-                reward,
-                cccRecipient
-            );
-            const wrapTxHash = await payerInfo.sendTransaction(wrapCCC, 100000);
-            console.log(`CCC is wrapped with transaction hash ${wrapTxHash}`);
-            sleep.sleep(dropInterval);
+        if (cccRecipient) {
+            try {
+                const wrapCCC = await wrapCCCTransaction(
+                    sdk,
+                    payer,
+                    reward,
+                    cccRecipient
+                );
+                const wrapTxHash = await payerInfo.sendTransaction(
+                    wrapCCC,
+                    100000
+                );
+                console.log(
+                    `CCC is wrapped with transaction hash ${wrapTxHash}`
+                );
+                sleep.sleep(dropInterval);
 
-            const unwrapCCC = await unwrapCCCTransaction(sdk, wrapCCC, payer);
-            const unwrapTxHash = await payerInfo.sendTransaction(
-                unwrapCCC,
-                100
-            );
-            console.log(
-                `CCC is unwrapped with transaction hash ${unwrapTxHash}`
-            );
-        } catch (err) {
-            console.error(err);
+                const unwrapCCC = await unwrapCCCTransaction(
+                    sdk,
+                    wrapCCC,
+                    payer
+                );
+                const unwrapTxHash = await payerInfo.sendTransaction(
+                    unwrapCCC,
+                    100
+                );
+                console.log(
+                    `CCC is unwrapped with transaction hash ${unwrapTxHash}`
+                );
+            } catch (err) {
+                console.error(err);
+            }
+            sleep.sleep(dropInterval);
         }
-        sleep.sleep(dropInterval);
 
         if (oil) {
             if (Math.random() < 0.1) {
