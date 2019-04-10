@@ -42,7 +42,7 @@ describe("mint oil", async function() {
     });
 
     it("Mint", async function() {
-        const oilOwner = (await sdk.key.createAssetTransferAddress({
+        const oilOwner = (await sdk.key.createAssetAddress({
             keyStore,
             passphrase: "pass"
         })).toString();

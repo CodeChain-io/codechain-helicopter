@@ -1,11 +1,9 @@
-import { AssetTransferAddress } from "codechain-primitives";
+import { AssetAddress } from "codechain-primitives";
 import { SDK } from "codechain-sdk";
 import { getConfig } from "./util";
 
-export async function createWCCCRecipient(
-    sdk: SDK
-): Promise<AssetTransferAddress> {
-    return await sdk.key.createAssetTransferAddress({
+export async function createWCCCRecipient(sdk: SDK): Promise<AssetAddress> {
+    return await sdk.key.createAssetAddress({
         type: "P2PKHBurn"
     });
 }

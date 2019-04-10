@@ -7,7 +7,7 @@ import * as sleep from "sleep";
 import { airdropCCCTransaction } from "./airdropCCC";
 import { airdropOilTransaction, handlePendingInfos } from "./airdropOil";
 import { unwrapCCCTransaction } from "./unwrapCCC";
-import { containTransaction, PayerInfo } from "./util";
+import { containsTransaction, PayerInfo } from "./util";
 import { wrapCCCTransaction } from "./wrapCCC";
 
 export async function main(
@@ -137,7 +137,7 @@ export async function main(
                 oil.asset = newOilAsset;
                 sleep.sleep(dropInterval);
 
-                const invoice = await containTransaction(
+                const invoice = await containsTransaction(
                     sdk,
                     sentOilTransactionHash
                 );

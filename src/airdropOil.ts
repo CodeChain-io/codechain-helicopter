@@ -6,7 +6,7 @@ import { Script } from "codechain-sdk/lib/core/Script";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import { KeyStore } from "codechain-sdk/lib/key/KeyStore";
 import { blake160 } from "codechain-sdk/lib/utils";
-import { containTransaction } from "./util";
+import { containsTransaction } from "./util";
 
 const airdropOilWaitingLimit = 10;
 
@@ -98,7 +98,7 @@ export async function handlePendingInfos(
     let lastSuccessfulAsset = prevLastSuccessful;
     while (pendingOilInfos.length !== 0) {
         const info = pendingOilInfos[0];
-        const result = await containTransaction(sdk, info.txHash);
+        const result = await containsTransaction(sdk, info.txHash);
 
         if (!result) {
             const ifExpirationLimitExceeded =
